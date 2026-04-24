@@ -15,7 +15,7 @@ export function TopNav() {
       <div className="container max-w-6xl flex h-14 items-center justify-between">
         <button
           type="button"
-          onClick={() => navigate('/quotes')}
+          onClick={() => navigate('/new-quote')}
           className="w-9 h-9 rounded-xl bg-foreground text-background flex items-center justify-center text-sm font-bold tracking-tight hover:opacity-80 transition-opacity active:scale-95"
         >
           SM
