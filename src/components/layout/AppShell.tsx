@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { TopNav } from './TopNav';
 import { BottomNav } from './BottomNav';
+import { AiChat } from './AiChat';
 import { ToastViewport } from '@/components/ui/toast';
 
 export function AppShell() {
@@ -11,6 +12,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNav />
+      <AiChat />
       <ToastViewport />
     </div>
   );
