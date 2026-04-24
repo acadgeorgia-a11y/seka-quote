@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { detectZoneFromComponents } from '@/lib/apis/zoneDetect';
 
 let apiState: 'idle' | 'loading' | 'ready' | 'error' = 'idle';
 const waiters: (() => void)[] = [];
@@ -28,7 +29,8 @@ function loadPlacesApi(apiKey: string): Promise<void> {
 
 interface Props {
   value: string;
-  onChange: (address: string, zip: string) => void;
+  // zone is auto-detected from address components and passed back here
+  onChange: (address: string, zip: string, zone: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -39,7 +41,6 @@ export function AddressInput({ value, onChange, placeholder, className }: Props)
   const onChangeRef = useRef(onChange);
   const [ready, setReady] = useState(apiState === 'ready');
 
-  // Keep the ref pointing at the latest onChange without re-attaching the listener
   useLayoutEffect(() => { onChangeRef.current = onChange; });
 
   useEffect(() => {
@@ -57,13 +58,11 @@ export function AddressInput({ value, onChange, placeholder, className }: Props)
 
         ac.addListener('place_changed', () => {
           const place = ac.getPlace();
+          const components = place.address_components ?? [];
           const formatted = place.formatted_address ?? '';
-          const zipComp = place.address_components?.find((c) =>
-            c.types.includes('postal_code'),
-          );
-          const zip = zipComp?.short_name ?? '';
-          // Always uses latest onChange via ref — no stale closure
-          onChangeRef.current(formatted, zip);
+          const zip = components.find((c) => c.types.includes('postal_code'))?.short_name ?? '';
+          const zone = detectZoneFromComponents(components);
+          onChangeRef.current(formatted, zip, zone);
         });
 
         autocompleteRef.current = ac;
@@ -77,7 +76,6 @@ export function AddressInput({ value, onChange, placeholder, className }: Props)
     };
   }, []);
 
-  // Sync external value changes into the uncontrolled input
   useEffect(() => {
     if (inputRef.current && document.activeElement !== inputRef.current) {
       inputRef.current.value = value;
@@ -92,9 +90,9 @@ export function AddressInput({ value, onChange, placeholder, className }: Props)
         defaultValue={value}
         placeholder={placeholder}
         className={cn(
-          'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',
+          'flex h-10 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm',
           'ring-offset-background placeholder:text-muted-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30',
           className,
         )}
       />
