@@ -68,7 +68,7 @@ export function QuotesList() {
           {/* Desktop table */}
           <div className="hidden md:block rounded-2xl bg-card shadow-sm overflow-hidden">
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/40 bg-secondary/40">
-              <div>Quote / Customer</div>
+              <div>Job #</div>
               <div>Date</div>
               <div>Agent</div>
               <div>Type</div>
@@ -85,10 +85,7 @@ export function QuotesList() {
                 onClick={() => navigate(`/quotes/${q.quote_code}`)}
                 className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-3.5 w-full text-left border-b border-border/30 last:border-0 hover:bg-secondary/30 transition-colors text-sm"
               >
-                <div>
-                  <div className="font-mono text-xs text-muted-foreground">{q.quote_code}</div>
-                  <div className="font-semibold truncate">{q.customer_name || '—'}</div>
-                </div>
+                <div className="font-semibold truncate">{q.customer_name || '—'}</div>
                 <div className="text-muted-foreground text-sm">
                   {q.move_date ?? new Date(q.created_at).toLocaleDateString()}
                 </div>
@@ -116,8 +113,7 @@ export function QuotesList() {
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <div className="font-semibold text-base">{q.customer_name || 'No name'}</div>
-                    <div className="font-mono text-xs text-muted-foreground mt-0.5">{q.quote_code}</div>
+                    <div className="font-semibold text-base">{q.customer_name || '—'}</div>
                   </div>
                   <div className="text-right shrink-0">
                     <div className="font-bold text-lg tabular-nums">{formatMoney(q.final_total)}</div>

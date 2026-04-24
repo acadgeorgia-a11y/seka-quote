@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { PriceBreakdown } from '@/components/quote-builder/PriceBreakdown';
 import { DualPriceCard } from '@/components/quote-builder/DualPriceCard';
 import { GlassPanel } from '@/components/shared/GlassPanel';
@@ -70,18 +70,9 @@ export function QuoteDetail() {
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-muted-foreground">{quote.quote_code}</span>
-            <button
-              type="button"
-              onClick={() => { navigator.clipboard.writeText(quote.quote_code); toast({ title: 'Copied', variant: 'info' }); }}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Job #</div>
           <h1 className="font-serif text-3xl tracking-tight2">
-            {quote.customer_name || 'Draft quote'}
+            {quote.customer_name || '—'}
           </h1>
         </div>
       </div>
@@ -122,12 +113,11 @@ export function QuoteDetail() {
             {quote.tolls_amount != null && <Row label="Tolls" value={formatMoney(quote.tolls_amount)} />}
           </GlassPanel>
 
-          {(quote.customer_name || quote.customer_email || quote.customer_phone) && (
+          {(quote.customer_name || quote.customer_email) && (
             <GlassPanel className="p-4 space-y-3 text-sm">
-              <div className="font-medium text-xs text-muted-foreground uppercase tracking-wide">Customer</div>
-              {quote.customer_name && <Row label="Name" value={quote.customer_name} />}
+              <div className="font-medium text-xs text-muted-foreground uppercase tracking-wide">Quote info</div>
+              {quote.customer_name && <Row label="Job #" value={quote.customer_name} />}
               {quote.customer_email && <Row label="Email" value={quote.customer_email} />}
-              {quote.customer_phone && <Row label="Phone" value={quote.customer_phone} />}
             </GlassPanel>
           )}
 
