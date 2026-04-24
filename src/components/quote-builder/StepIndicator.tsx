@@ -19,9 +19,9 @@ export function StepIndicator({ current, onJump }: { current: number; onJump?: (
               className={cn(
                 'inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold transition-colors',
                 active
-                  ? 'bg-accent text-white'
+                  ? 'bg-foreground text-background'
                   : done
-                  ? 'bg-accent/20 text-accent'
+                  ? 'bg-foreground/20 text-foreground'
                   : 'bg-secondary text-muted-foreground',
               )}
             >

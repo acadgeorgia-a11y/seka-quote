@@ -27,7 +27,7 @@ export function AdminShell() {
                 cn(
                   'shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap',
                   isActive
-                    ? 'bg-accent text-white'
+                    ? 'bg-foreground text-background'
                     : 'bg-secondary text-muted-foreground hover:text-foreground',
                 )
               }

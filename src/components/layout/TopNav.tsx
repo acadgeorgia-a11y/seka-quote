@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AgentPicker } from './AgentPicker';
 import { cn } from '@/lib/utils';
 
@@ -9,10 +9,17 @@ const links = [
 ];
 
 export function TopNav() {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
       <div className="container max-w-6xl flex h-14 items-center justify-between">
-        <div />
+        <button
+          type="button"
+          onClick={() => navigate('/quotes')}
+          className="w-9 h-9 rounded-xl bg-foreground text-background flex items-center justify-center text-sm font-bold tracking-tight hover:opacity-80 transition-opacity active:scale-95"
+        >
+          SM
+        </button>
         <nav className="hidden md:flex items-center gap-0.5">
           {links.map((l) => (
             <NavLink

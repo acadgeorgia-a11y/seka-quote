@@ -19,7 +19,7 @@ export function BottomNav() {
             className={({ isActive }) =>
               cn(
                 'flex flex-1 flex-col items-center justify-center gap-1 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] text-[10px] font-medium transition-colors',
-                isActive ? 'text-accent' : 'text-muted-foreground',
+                isActive ? 'text-foreground' : 'text-muted-foreground',
               )
             }
           >

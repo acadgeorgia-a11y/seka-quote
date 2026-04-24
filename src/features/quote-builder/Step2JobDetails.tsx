@@ -130,7 +130,7 @@ export function Step2JobDetails({
                 onClick={() => update({ crew_override: n === autoCrew ? undefined : n })}
                 className={`w-11 h-11 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
                   crew === n
-                    ? 'bg-accent text-white shadow-sm'
+                    ? 'bg-foreground text-background shadow-sm'
                     : 'bg-secondary text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -164,7 +164,7 @@ export function Step2JobDetails({
           ← Back
         </button>
         <button type="button" onClick={onNext}
-          className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98]">
+          className="px-6 py-2.5 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98]">
           Continue
         </button>
       </div>

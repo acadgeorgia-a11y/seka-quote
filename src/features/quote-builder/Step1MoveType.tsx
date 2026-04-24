@@ -243,7 +243,7 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
 
       <div className="flex justify-end pt-1">
         <button type="button" onClick={onNext} disabled={!canContinue}
-          className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold disabled:opacity-40 transition-opacity hover:opacity-90 active:scale-[0.98]">
+          className="px-6 py-2.5 rounded-xl bg-foreground text-background text-sm font-semibold disabled:opacity-40 transition-opacity hover:opacity-90 active:scale-[0.98]">
           Continue
         </button>
       </div>

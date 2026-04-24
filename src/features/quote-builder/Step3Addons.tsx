@@ -186,7 +186,7 @@ export function Step3Addons({ rates, onBack, onNext }: { rates: RateBundle; onBa
           ← Back
         </button>
         <button type="button" onClick={onNext}
-          className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98]">
+          className="px-6 py-2.5 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98]">
           Review Quote
         </button>
       </div>

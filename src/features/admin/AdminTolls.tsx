@@ -125,7 +125,7 @@ function CrzRateRow({ rate, onSave }: { rate: CrzRate; onSave: (amt: number) => 
         <NumberInput value={val} onChange={setVal} min={0} step={0.1} className="h-9 w-24" />
         {dirty && (
           <button type="button" onClick={() => onSave(val)}
-            className="text-xs px-2.5 py-1.5 rounded-lg bg-accent text-white font-medium">
+            className="text-xs px-2.5 py-1.5 rounded-lg bg-foreground text-background font-medium">
             Save
           </button>
         )}
@@ -172,7 +172,7 @@ function RouteRow({
         type="button"
         onClick={() => onSave(route, toll, crz, notes)}
         disabled={!dirty}
-        className="px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-semibold disabled:opacity-30 transition-opacity"
+        className="px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-semibold disabled:opacity-30 transition-opacity"
       >
         Save
       </button>
