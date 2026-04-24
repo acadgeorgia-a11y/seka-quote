@@ -12,9 +12,7 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
       <div className="container max-w-6xl flex h-14 items-center justify-between">
-        <span className="text-base font-semibold tracking-tight">
-          Seka Quote
-        </span>
+        <div />
         <nav className="hidden md:flex items-center gap-0.5">
           {links.map((l) => (
             <NavLink
