@@ -128,7 +128,7 @@ export function QuoteBuilder() {
         <StepIndicator current={step} onJump={setStep} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-start">
         <GlassPanel className="p-6">
           <AnimatePresence mode="wait">
             <motion.div key={step} {...SLIDE}>
@@ -153,7 +153,7 @@ export function QuoteBuilder() {
           </AnimatePresence>
         </GlassPanel>
 
-        <div className="space-y-4 lg:sticky lg:top-20">
+        <div className="space-y-3 lg:sticky lg:top-20 order-first lg:order-last">
           <GlassPanel className="p-5">
             <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Live Total</div>
             {breakdown ? (
