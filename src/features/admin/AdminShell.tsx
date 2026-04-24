@@ -6,6 +6,7 @@ const sections = [
   { to: '/admin/rates/local', label: 'Local Rates' },
   { to: '/admin/rates/long-distance', label: 'Long Distance' },
   { to: '/admin/rates/addons', label: 'Add-ons' },
+  { to: '/admin/tolls', label: 'Tolls' },
   { to: '/admin/settings', label: 'Settings' },
   { to: '/admin/agents', label: 'Agents' },
 ];

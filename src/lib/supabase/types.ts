@@ -92,6 +92,10 @@ export type QuoteRow = {
   destination_zip: string;
   round_trip_miles: number | null;
   tolls_amount: number | null;
+  origin_zone: string | null;
+  destination_zone: string | null;
+  extra_stops: ExtraStop[] | null;
+  calculated_toll: number | null;
   total_cuft: number | null;
   crew_size: number | null;
   fourth_man: boolean;
@@ -112,6 +116,37 @@ export type QuoteRow = {
   needs_owner_review: boolean;
   review_note: string | null;
   status: QuoteStatus;
+};
+
+export type TollZone = {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+};
+
+export type TollRoute = {
+  id: string;
+  from_zone: string;
+  to_zone: string;
+  round_trip_toll: number;
+  crz_applies: boolean;
+  notes: string | null;
+  effective_date: string;
+  updated_at: string;
+};
+
+export type CrzRate = {
+  id: string;
+  rate_type: 'peak' | 'off_peak';
+  amount: number;
+  effective_date: string;
+};
+
+export type ExtraStop = {
+  address: string;
+  zip: string;
+  zone: string;
 };
 
 export type AgentInsert = {
@@ -140,6 +175,10 @@ export type QuoteInsert = {
   destination_zip: string;
   round_trip_miles?: number | null;
   tolls_amount?: number | null;
+  origin_zone?: string | null;
+  destination_zone?: string | null;
+  extra_stops?: ExtraStop[] | null;
+  calculated_toll?: number | null;
   total_cuft?: number | null;
   crew_size?: number | null;
   fourth_man?: boolean;
@@ -175,6 +214,9 @@ export type Database = {
       rates_heavy_items: { Row: RateHeavyItem; Insert: Omit<RateHeavyItem, 'id'> & { id?: number }; Update: Partial<RateHeavyItem>; Relationships: [] };
       rates_misc: { Row: RateMisc; Insert: RateMisc; Update: Partial<RateMisc>; Relationships: [] };
       quotes: { Row: QuoteRow; Insert: QuoteInsert; Update: Partial<QuoteRow>; Relationships: [] };
+      toll_zones: { Row: TollZone; Insert: Omit<TollZone, 'created_at'> & { created_at?: string }; Update: Partial<TollZone>; Relationships: [] };
+      toll_routes: { Row: TollRoute; Insert: Omit<TollRoute, 'id' | 'effective_date' | 'updated_at'> & { id?: string; effective_date?: string; updated_at?: string }; Update: Partial<TollRoute>; Relationships: [] };
+      crz_rates: { Row: CrzRate; Insert: Omit<CrzRate, 'id' | 'effective_date'> & { id?: string; effective_date?: string }; Update: Partial<CrzRate>; Relationships: [] };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

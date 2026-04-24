@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { QuoteInput } from '@/lib/pricing/types';
+import type { ExtraStop } from '@/lib/supabase/types';
 
 export interface DraftCustomer {
   name: string;
@@ -10,12 +11,17 @@ export interface DraftCustomer {
 export interface QuoteDraft extends Partial<QuoteInput> {
   origin_address: string;
   origin_zip: string;
+  origin_zone: string;
   destination_address: string;
   destination_zip: string;
+  destination_zone: string;
+  extra_stops: ExtraStop[];
   move_date: string | null;
   customer: DraftCustomer;
   auto_mileage_loading: boolean;
-  auto_tolls_loading: boolean;
+  calculated_toll: number;
+  toll_breakdown: string;
+  toll_notes: string;
 }
 
 const EMPTY: QuoteDraft = {
@@ -28,13 +34,18 @@ const EMPTY: QuoteDraft = {
   tolls: 0,
   origin_address: '',
   origin_zip: '',
+  origin_zone: '',
   destination_address: '',
   destination_zip: '',
+  destination_zone: '',
+  extra_stops: [],
   move_date: null,
   time_slot: 'morning',
   customer: { name: '', email: '', phone: '' },
   auto_mileage_loading: false,
-  auto_tolls_loading: false,
+  calculated_toll: 0,
+  toll_breakdown: '',
+  toll_notes: '',
   boxes: [],
   heavy_items: [],
   crating: { soft_qty: 0 },

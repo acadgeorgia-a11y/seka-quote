@@ -10,6 +10,7 @@ import { AdminRatesLongDistance } from './features/admin/AdminRatesLongDistance'
 import { AdminRatesAddons } from './features/admin/AdminRatesAddons';
 import { AdminSettings } from './features/admin/AdminSettings';
 import { AdminAgents } from './features/admin/AdminAgents';
+import { AdminTolls } from './features/admin/AdminTolls';
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
           { path: 'rates/addons', element: <AdminRatesAddons /> },
           { path: 'settings', element: <AdminSettings /> },
           { path: 'agents', element: <AdminAgents /> },
+          { path: 'tolls', element: <AdminTolls /> },
         ],
       },
     ],
