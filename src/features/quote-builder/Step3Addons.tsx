@@ -181,11 +181,13 @@ export function Step3Addons({ rates, onBack, onNext }: { rates: RateBundle; onBa
       </div>
 
       <div className="flex justify-between pt-2">
-        <button type="button" onClick={onBack} className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <button type="button" onClick={onBack}
+          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-accent hover:bg-accent/10 transition-colors">
           ← Back
         </button>
-        <button type="button" onClick={onNext} className="px-5 py-2 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity">
-          Review Quote →
+        <button type="button" onClick={onNext}
+          className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.98]">
+          Review Quote
         </button>
       </div>
     </div>

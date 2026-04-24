@@ -12,12 +12,12 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        serif: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
       },
       letterSpacing: {
         tightish: '-0.015em',
-        tight2: '-0.025em',
+        tight2: '-0.022em',
       },
       colors: {
         border: 'hsl(var(--border))',

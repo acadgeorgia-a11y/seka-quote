@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NumberInput } from '@/components/shared/NumberInput';
+import { IOSSegment } from '@/components/shared/IOSSegment';
 import { AddressInput } from '@/components/quote-builder/AddressInput';
 import { useQuoteDraft } from '@/stores/useQuoteDraft';
 import { getRoundTripMiles } from '@/lib/apis/mileage';
@@ -11,8 +12,8 @@ import { formatMoney } from '@/lib/utils';
 import type { Settings } from '@/lib/supabase/types';
 
 const MOVE_TYPES = [
-  { value: 'local', label: 'Local', hint: 'NY/NJ metro area' },
-  { value: 'long_distance', label: 'Long Distance', hint: 'NY/NJ origin → another state' },
+  { value: 'local', label: 'Local', hint: 'NY/NJ metro' },
+  { value: 'long_distance', label: 'Long Distance', hint: 'NY/NJ → other state' },
   { value: 'out_of_state', label: 'Out-of-State', hint: '3rd party carrier' },
 ] as const;
 
@@ -20,7 +21,6 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
   const { draft, update } = useQuoteDraft();
   const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Always reads the freshest store state — avoids stale closure bugs
   function scheduleFetch() {
     const { draft: d } = useQuoteDraft.getState();
     const origin = d.origin_address;
@@ -38,13 +38,12 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
         });
         useQuoteDraft.getState().update({ round_trip_miles: res.roundTripMiles, tolls: res.tolls });
       } catch {
-        // leave existing values — agent can override manually
+        // leave existing values
       } finally {
         useQuoteDraft.getState().update({ auto_mileage_loading: false, auto_tolls_loading: false });
       }
     }, 600);
 
-    // Auto-detect move type from ZIPs
     if (d.origin_zip?.length === 5 && d.destination_zip?.length === 5) {
       const detected = detectMoveType(d.origin_zip, d.destination_zip);
       if (detected) useQuoteDraft.getState().update({ move_type: detected });
@@ -65,55 +64,43 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="text-sm font-medium mb-3">Move type</div>
-        <div className="grid grid-cols-3 gap-2">
-          {MOVE_TYPES.map(({ value, label, hint }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => update({ move_type: value })}
-              className={`rounded-xl border p-3 text-left transition-all ${
-                draft.move_type === value
-                  ? 'border-accent bg-accent/5 ring-1 ring-accent/40'
-                  : 'border-border/60 hover:border-border'
-              }`}
-            >
-              <div className="font-medium text-sm">{label}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>
-            </button>
-          ))}
-        </div>
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Move Type</Label>
+        <IOSSegment
+          options={MOVE_TYPES}
+          value={draft.move_type ?? 'local'}
+          onChange={(v) => update({ move_type: v })}
+        />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label>Origin address</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Origin Address</Label>
           <AddressInput
             value={draft.origin_address}
             onChange={handleOriginSelect}
             placeholder="Start typing origin address…"
           />
           {draft.origin_zip && (
-            <div className="text-xs text-muted-foreground">ZIP: {draft.origin_zip}</div>
+            <div className="text-xs text-muted-foreground pl-1">ZIP: {draft.origin_zip}</div>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label>Destination address</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Destination Address</Label>
           <AddressInput
             value={draft.destination_address}
             onChange={handleDestinationSelect}
             placeholder="Start typing destination address…"
           />
           {draft.destination_zip && (
-            <div className="text-xs text-muted-foreground">ZIP: {draft.destination_zip}</div>
+            <div className="text-xs text-muted-foreground pl-1">ZIP: {draft.destination_zip}</div>
           )}
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label>Move date</Label>
+        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Move Date</Label>
         <Input
           type="date"
           value={draft.move_date ?? ''}
@@ -122,24 +109,20 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
         />
       </div>
 
-      <div className="rounded-xl border border-border/60 bg-secondary/20 p-3 space-y-3">
+      <div className="rounded-2xl bg-secondary/60 p-4 space-y-3">
         <div className="flex items-center gap-3 text-sm">
           {(draft.auto_mileage_loading || draft.auto_tolls_loading) && (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           )}
-          <span className="text-muted-foreground">Travel:</span>
-          <span className="tabular-nums font-medium">
-            {draft.round_trip_miles ?? 0} mi round trip
-          </span>
+          <span className="font-semibold">Travel</span>
+          <span className="tabular-nums">{draft.round_trip_miles ?? 0} mi round trip</span>
           <span className="text-muted-foreground">·</span>
-          <span className="tabular-nums font-medium">
-            {formatMoney(draft.tolls ?? 0)} tolls
-          </span>
+          <span className="tabular-nums">{formatMoney(draft.tolls ?? 0)} tolls</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-          <span>Override:</span>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+          <span className="font-medium">Override:</span>
           <div className="flex items-center gap-1.5">
-            <Label className="text-xs text-muted-foreground">Miles</Label>
+            <span>Miles</span>
             <NumberInput
               value={draft.round_trip_miles ?? 0}
               onChange={(n) => update({ round_trip_miles: n })}
@@ -147,7 +130,7 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <Label className="text-xs text-muted-foreground">Tolls ($)</Label>
+            <span>Tolls ($)</span>
             <NumberInput
               value={draft.tolls ?? 0}
               onChange={(n) => update({ tolls: n })}
@@ -157,14 +140,14 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-1">
         <button
           type="button"
           onClick={onNext}
           disabled={!canContinue}
-          className="px-5 py-2 rounded-xl bg-accent text-accent-foreground text-sm font-medium disabled:opacity-40 transition-opacity hover:opacity-90"
+          className="px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold disabled:opacity-40 transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          Next — Job Details
+          Continue
         </button>
       </div>
     </div>

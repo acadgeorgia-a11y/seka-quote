@@ -122,7 +122,7 @@ export function QuoteBuilder() {
     <div className="py-6">
       <div className="mb-6">
         <div className="flex items-start justify-between mb-3">
-          <h1 className="font-serif text-4xl tracking-tight2">New quote</h1>
+          <h1 className="text-3xl font-bold tracking-tight2">New Quote</h1>
           <NewQuoteButton />
         </div>
         <StepIndicator current={step} onJump={setStep} />
@@ -155,14 +155,14 @@ export function QuoteBuilder() {
 
         <div className="space-y-4 lg:sticky lg:top-20">
           <GlassPanel className="p-5">
-            <div className="text-xs text-muted-foreground mb-1">Live total</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Live Total</div>
             {breakdown ? (
               <MoneyDisplay
                 value={breakdown.final_total}
-                className="font-serif text-4xl tracking-tight2 tabular-nums"
+                className="text-4xl font-bold tracking-tight2 tabular-nums"
               />
             ) : (
-              <div className="font-serif text-4xl tracking-tight2 text-muted-foreground/40">—</div>
+              <div className="text-4xl font-bold tracking-tight2 text-muted-foreground/30">—</div>
             )}
           </GlassPanel>
 
