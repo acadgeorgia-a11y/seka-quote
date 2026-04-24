@@ -101,7 +101,7 @@ export function Step4Review({ breakdown, rates: _rates, onBack }: Props) {
 
         await sendQuoteEmail({
           to: draft.customer.email,
-          customerName: draft.customer.name || 'there',
+          customerName: draft.customer.job_number || 'there',
           quoteCode: row.quote_code,
           agentName: agent?.full_name ?? 'Your agent',
           moveType: draft.move_type ?? 'local',
