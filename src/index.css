@@ -11,21 +11,21 @@
     --card-foreground: 0 0% 7%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 7%;
-    --primary: 211 100% 50%;         /* #007AFF */
+    --primary: 0 0% 7%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 24% 94%;        /* slightly deeper system fill */
+    --secondary: 240 24% 94%;
     --secondary-foreground: 0 0% 7%;
     --muted: 240 10% 92%;
-    --muted-foreground: 240 4% 46%;  /* iOS secondary label */
-    --accent: 211 100% 50%;          /* #007AFF */
+    --muted-foreground: 240 4% 46%;
+    --accent: 0 0% 7%;               /* black */
     --accent-foreground: 0 0% 100%;
-    --destructive: 2 100% 60%;       /* iOS red #FF3B30 */
+    --destructive: 2 100% 60%;
     --destructive-foreground: 0 0% 100%;
-    --success: 134 61% 41%;          /* iOS green #34C759 */
+    --success: 134 61% 41%;
     --success-foreground: 0 0% 100%;
-    --border: 240 6% 88%;            /* iOS separator */
+    --border: 240 6% 88%;
     --input: 240 24% 94%;
-    --ring: 211 100% 50%;
+    --ring: 0 0% 7%;
     --radius: 0.75rem;               /* 12px — iOS feel */
   }
 
@@ -37,21 +37,21 @@
     --card-foreground: 0 0% 100%;
     --popover: 240 4% 11%;
     --popover-foreground: 0 0% 100%;
-    --primary: 211 100% 52%;         /* #0A84FF */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 2% 18%;         /* #2C2C2E */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 2% 18%;
     --secondary-foreground: 0 0% 100%;
     --muted: 240 2% 18%;
-    --muted-foreground: 240 4% 62%;  /* iOS secondary label dark */
-    --accent: 211 100% 52%;          /* #0A84FF */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 2 100% 62%;       /* iOS red dark #FF453A */
+    --muted-foreground: 240 4% 62%;
+    --accent: 0 0% 100%;             /* white (dark mode "black" equivalent) */
+    --accent-foreground: 0 0% 0%;
+    --destructive: 2 100% 62%;
     --destructive-foreground: 0 0% 100%;
-    --success: 134 60% 57%;          /* iOS green dark #30D158 */
+    --success: 134 60% 57%;
     --success-foreground: 0 0% 0%;
     --border: 240 2% 22%;
     --input: 240 2% 18%;
-    --ring: 211 100% 52%;
+    --ring: 0 0% 100%;
   }
 }
 

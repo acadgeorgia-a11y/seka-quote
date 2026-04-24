@@ -23,7 +23,7 @@ function ZoneLabel({ zoneId, zones }: { zoneId: string; zones: TollZone[] }) {
   if (!zoneId) return null;
   const zone = zones.find((z) => z.id === zoneId);
   return (
-    <span className="inline-flex items-center gap-1 text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
+    <span className="inline-flex items-center gap-1 text-xs bg-foreground/10 text-foreground px-2 py-0.5 rounded-full font-medium">
       {zone?.name ?? zoneId}
     </span>
   );
@@ -168,7 +168,7 @@ export function Step1MoveType({ settings, onNext }: { settings: Settings; onNext
         ))}
 
         <button type="button" onClick={addStop}
-          className="flex items-center gap-2 text-sm text-accent font-medium hover:opacity-80 transition-opacity py-1">
+          className="flex items-center gap-2 text-sm text-foreground font-medium hover:opacity-60 transition-opacity py-1">
           <Plus className="h-4 w-4" />
           Add stop
         </button>
