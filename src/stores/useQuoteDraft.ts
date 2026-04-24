@@ -3,9 +3,8 @@ import type { QuoteInput } from '@/lib/pricing/types';
 import type { ExtraStop } from '@/lib/supabase/types';
 
 export interface DraftCustomer {
-  name: string;
+  job_number: string;
   email: string;
-  phone: string;
 }
 
 export interface QuoteDraft extends Partial<QuoteInput> {
@@ -41,7 +40,7 @@ const EMPTY: QuoteDraft = {
   extra_stops: [],
   move_date: null,
   time_slot: 'morning',
-  customer: { name: '', email: '', phone: '' },
+  customer: { job_number: '', email: '' },
   auto_mileage_loading: false,
   calculated_toll: 0,
   toll_breakdown: '',

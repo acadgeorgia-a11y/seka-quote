@@ -29,9 +29,9 @@ function buildInsert(
 ): Omit<QuoteInsert, 'quote_code'> {
   return {
     agent_id: agentId,
-    customer_name: draft.customer.name || null,
+    customer_name: draft.customer.job_number || null,
     customer_email: draft.customer.email || null,
-    customer_phone: draft.customer.phone || null,
+    customer_phone: null,
     move_type: draft.move_type ?? 'local',
     pricing_method: draft.pricing_method ?? null,
     is_hra: draft.is_hra ?? false,
@@ -152,27 +152,19 @@ export function Step4Review({ breakdown, rates: _rates, onBack }: Props) {
 
       <div className="space-y-3 pt-2 border-t border-border/40">
         <div className="text-sm font-medium">
-          Customer info{' '}
+          Quote info{' '}
           <span className="text-muted-foreground font-normal">(email required to send)</span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label>Name</Label>
+            <Label>Job Number</Label>
             <Input
-              value={draft.customer.name}
-              onChange={(e) => setCustomer({ name: e.target.value })}
-              placeholder="Jane Smith"
+              value={draft.customer.job_number}
+              onChange={(e) => setCustomer({ job_number: e.target.value })}
+              placeholder="e.g. 10482"
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Phone</Label>
-            <Input
-              value={draft.customer.phone}
-              onChange={(e) => setCustomer({ phone: e.target.value })}
-              placeholder="(917) 555-0000"
-            />
-          </div>
-          <div className="col-span-2 space-y-1.5">
             <Label>Email</Label>
             <Input
               type="email"
