@@ -204,21 +204,21 @@ export function Step4Review({ breakdown, rates: _rates, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={() => save('draft')}
-            disabled={saving}
-            className="px-4 py-2 rounded-xl border border-border/60 text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-50"
-          >
-            {saving ? 'Saving…' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
             onClick={() => save('sent')}
             disabled={saving || missingEmail}
             title={missingEmail ? 'Enter customer email first' : 'Send quote by email'}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border/60 text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-40"
           >
             <Send className="h-4 w-4" />
-            {saving ? 'Sending…' : 'Send to Customer'}
+            {saving ? 'Sending…' : 'Send'}
+          </button>
+          <button
+            type="button"
+            onClick={() => save('draft')}
+            disabled={saving}
+            className="px-6 py-2 rounded-xl bg-foreground text-background text-sm font-bold tracking-widest uppercase hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {saving ? 'Logging…' : 'LOG'}
           </button>
         </div>
       </div>

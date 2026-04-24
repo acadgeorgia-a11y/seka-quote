@@ -15,6 +15,7 @@ import { Step1MoveType } from './Step1MoveType';
 import { Step2JobDetails } from './Step2JobDetails';
 import { Step3Addons } from './Step3Addons';
 import { Step4Review } from './Step4Review';
+import { AgentGate } from './AgentGate';
 
 function bundleToRateTables(b: RateBundle): RateTables {
   return {
@@ -119,6 +120,7 @@ export function QuoteBuilder() {
   if (!rates) return null;
 
   return (
+    <AgentGate>
     <div className="py-6">
       <div className="mb-6">
         <div className="flex items-start justify-between mb-3">
@@ -175,6 +177,7 @@ export function QuoteBuilder() {
         </div>
       </div>
     </div>
+    </AgentGate>
   );
 }
 
