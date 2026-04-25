@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { AdminGate } from './AdminGate';
 import { cn } from '@/lib/utils';
 
@@ -12,10 +13,27 @@ const sections = [
 ];
 
 export function AdminShell() {
+  const navigate = useNavigate();
+
+  function signOut() {
+    localStorage.removeItem('admin_ok');
+    navigate('/admin');
+  }
+
   return (
     <AdminGate>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight2">Admin</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight2">Admin</h1>
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
 
         {/* Mobile: horizontal scroll tab strip */}
         <nav className="flex gap-1 overflow-x-auto pb-1 md:hidden scrollbar-none">
