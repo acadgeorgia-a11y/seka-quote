@@ -19,7 +19,9 @@ export async function sendChatMessage(messages: ChatMessage[]): Promise<{ reply:
     }),
   });
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? 'Chat request failed');
+  const text = await res.text();
+  let data: Record<string, unknown>;
+  try { data = JSON.parse(text); } catch { throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`); }
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${(data.error as string) ?? text.slice(0, 200)}`);
   return { reply: data.reply as string, searched: data.searched as boolean };
 }
