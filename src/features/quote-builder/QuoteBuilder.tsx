@@ -84,10 +84,9 @@ export function QuoteBuilder() {
     const isHourly = draft.pricing_method === 'hourly';
     const cuft = draft.total_cuft ?? 300;
     if (!isHourly && cuft < 300) return null;
-    if (isHourly && !draft.hours) return null;
+    if (isHourly && (draft.hours ?? 3) < 3) return null;
     try {
-      console.log('[quote] draft', { move_type: draft.move_type, pricing_method: draft.pricing_method, cuft, hours: draft.hours, tier: draft.tier, isHourly });
-      return calculateQuote(
+        return calculateQuote(
         {
           move_type: draft.move_type,
           pricing_method: draft.pricing_method,
@@ -95,7 +94,7 @@ export function QuoteBuilder() {
           jobs_on_calendar: draft.jobs_on_calendar ?? 0,
           total_cuft: cuft,
           time_slot: draft.time_slot,
-          hours: draft.hours,
+          hours: draft.hours ?? 3,
           crew_override: draft.crew_override,
           fourth_man: draft.fourth_man,
           destination_state: draft.destination_state,
