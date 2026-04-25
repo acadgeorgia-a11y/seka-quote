@@ -9,7 +9,7 @@ create table if not exists public.agents (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
   full_name text not null,
-  role text not null default 'agent' check (role in ('agent','owner','dispatch')),
+  role text not null default 'agent' check (role in ('agent','owner','dispatch','cs')),
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
