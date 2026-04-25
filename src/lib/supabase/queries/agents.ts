@@ -17,7 +17,7 @@ export async function listAllAgents(): Promise<Agent[]> {
   return data ?? [];
 }
 
-export async function createAgent(input: { full_name: string; email: string; role?: 'agent' | 'owner' | 'dispatch' }) {
+export async function createAgent(input: { full_name: string; email: string; role?: 'agent' | 'owner' | 'dispatch' | 'cs' }) {
   const { data, error } = await supabase
     .from('agents')
     .insert({ full_name: input.full_name, email: input.email, role: input.role ?? 'agent', active: true })
