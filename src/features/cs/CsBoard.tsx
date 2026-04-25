@@ -20,11 +20,11 @@ import { TaskModal } from './TaskModal';
 import type { Task, TaskStatus, TaskAssignee } from '@/lib/supabase/types';
 
 const COLUMNS: { status: TaskStatus; label: string; icon: React.ReactNode; color: string }[] = [
-  { status: 'not_started', label: 'Not Started', icon: <Circle className="h-4 w-4" />,       color: 'text-muted-foreground' },
-  { status: 'planning',    label: 'Planning',    icon: <BookOpen className="h-4 w-4" />,      color: 'text-blue-500' },
-  { status: 'in_progress', label: 'In Progress', icon: <Zap className="h-4 w-4" />,           color: 'text-amber-500' },
-  { status: 'review',      label: 'Review',      icon: <Eye className="h-4 w-4" />,           color: 'text-purple-500' },
-  { status: 'done',        label: 'Done',        icon: <CheckCircle2 className="h-4 w-4" />,  color: 'text-green-500' },
+  { status: 'not_started', label: 'Not Started', icon: <Circle className="h-3.5 w-3.5" />,      color: 'text-muted-foreground' },
+  { status: 'planning',    label: 'Planning',    icon: <BookOpen className="h-3.5 w-3.5" />,     color: 'text-blue-500' },
+  { status: 'in_progress', label: 'In Progress', icon: <Zap className="h-3.5 w-3.5" />,          color: 'text-amber-500' },
+  { status: 'review',      label: 'Review',      icon: <Eye className="h-3.5 w-3.5" />,          color: 'text-purple-500' },
+  { status: 'done',        label: 'Done',        icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: 'text-green-500' },
 ];
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -45,7 +45,7 @@ const ALL_ASSIGNEES: TaskAssignee[] = ['Alex', 'Terry', 'Chris', 'Rob'];
 
 function Avatar({ name }: { name: string }) {
   return (
-    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0 ${ASSIGNEE_COLOR[name] ?? 'bg-secondary text-foreground'}`}>
+    <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold shrink-0 ${ASSIGNEE_COLOR[name] ?? 'bg-secondary text-foreground'}`}>
       {name.slice(0, 2).toUpperCase()}
     </span>
   );
@@ -54,15 +54,15 @@ function Avatar({ name }: { name: string }) {
 function TaskCardInner({ task }: { task: Task }) {
   const overdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-start gap-2">
-        <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${PRIORITY_DOT[task.priority]}`} />
-        <span className="text-sm font-medium leading-snug flex-1">{task.title}</span>
+    <div className="space-y-2">
+      <div className="flex items-start gap-1.5">
+        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT[task.priority]}`} />
+        <span className="text-xs font-medium leading-snug flex-1">{task.title}</span>
       </div>
       {task.description && (
-        <p className="text-xs text-muted-foreground line-clamp-2 pl-4">{task.description}</p>
+        <p className="text-[11px] text-muted-foreground line-clamp-2 pl-3">{task.description}</p>
       )}
-      <div className="flex items-center justify-between pl-4">
+      <div className="flex items-center justify-between pl-3">
         {task.assignee ? <Avatar name={task.assignee} /> : <span />}
         {task.due_date && (
           <span className={`text-[10px] font-medium ${overdue ? 'text-destructive' : 'text-muted-foreground'}`}>
@@ -76,28 +76,20 @@ function TaskCardInner({ task }: { task: Task }) {
 
 function DraggableCard({ task, onClick }: { task: Task; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
-  const style = { transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.35 : 1 };
+  const style = { transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.3 : 1 };
 
   return (
-    <div ref={setNodeRef} style={style} className="touch-none">
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="touch-none outline-none">
       <motion.div
         layout
-        initial={{ opacity: 0, y: 6 }}
+        initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`bg-card rounded-2xl p-3.5 shadow-sm border border-border/30 transition-shadow ${isDragging ? '' : 'hover:border-border/60 hover:shadow-md'} cursor-grab active:cursor-grabbing`}
-        {...listeners}
-        {...attributes}
+        onClick={onClick}
+        className={`bg-card rounded-xl p-3 shadow-sm border border-border/30 transition-shadow cursor-grab active:cursor-grabbing select-none ${
+          isDragging ? '' : 'hover:border-border/60 hover:shadow-md'
+        }`}
       >
-        {/* Tap zone separate from drag — click fires on short press */}
-        <button
-          type="button"
-          onClick={onClick}
-          className="w-full text-left"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => { e.stopPropagation(); onClick(); }}
-        >
-          <TaskCardInner task={task} />
-        </button>
+        <TaskCardInner task={task} />
       </motion.div>
     </div>
   );
@@ -117,30 +109,30 @@ function DroppableColumn({
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
-    <div className="shrink-0 w-[280px] snap-start flex flex-col">
+    <div className="flex flex-col min-w-0">
       {/* Column header */}
-      <div className="flex items-center justify-between px-1 mb-3">
-        <div className={`flex items-center gap-2 font-semibold text-sm ${color}`}>
+      <div className="flex items-center justify-between mb-2 px-0.5">
+        <div className={`flex items-center gap-1.5 font-semibold text-xs ${color}`}>
           {icon}
-          {label}
-          <span className="text-xs font-normal text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
+          <span className="truncate">{label}</span>
+          <span className="text-[10px] font-normal text-muted-foreground bg-secondary rounded-full px-1.5 py-0.5 shrink-0">
             {tasks.length}
           </span>
         </div>
         <button
           type="button"
           onClick={onAddClick}
-          className="w-6 h-6 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          className="w-5 h-5 rounded-md bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3 w-3" />
         </button>
       </div>
 
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className={`flex-1 space-y-2 rounded-2xl p-2 transition-colors min-h-[120px] ${
-          isOver ? 'bg-accent/5 ring-2 ring-accent/20' : ''
+        className={`flex-1 space-y-1.5 rounded-xl p-1.5 transition-colors min-h-[100px] ${
+          isOver ? 'bg-accent/5 ring-2 ring-accent/20' : 'bg-secondary/30'
         }`}
       >
         {tasks.map((task) => (
@@ -150,11 +142,11 @@ function DroppableColumn({
           <button
             type="button"
             onClick={onAddClick}
-            className={`w-full py-6 rounded-2xl border-2 border-dashed text-xs transition-colors ${
-              isOver ? 'border-accent/40 text-accent' : 'border-border/40 text-muted-foreground hover:border-border/60 hover:text-foreground'
+            className={`w-full py-5 rounded-lg border-2 border-dashed text-[11px] transition-colors ${
+              isOver ? 'border-accent/40 text-accent' : 'border-border/30 text-muted-foreground hover:border-border/50'
             }`}
           >
-            + Add task
+            + Add
           </button>
         )}
       </div>
@@ -172,8 +164,8 @@ export function CsBoard() {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
   );
 
   useEffect(() => {
@@ -184,41 +176,29 @@ export function CsBoard() {
   }, []);
 
   function handleDragStart(e: DragStartEvent) {
-    const task = tasks.find((t) => t.id === e.active.id);
-    setActiveTask(task ?? null);
+    setActiveTask(tasks.find((t) => t.id === e.active.id) ?? null);
   }
 
   async function handleDragEnd(e: DragEndEvent) {
     setActiveTask(null);
     const { active, over } = e;
     if (!over) return;
-
     const taskId = active.id as string;
     const newStatus = over.id as TaskStatus;
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.status === newStatus) return;
 
-    // Optimistic update
     setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, status: newStatus } : t));
     try {
       await updateTask(taskId, { status: newStatus }, task.assignee);
     } catch {
-      // Revert on failure
       setTasks((prev) => prev.map((t) => t.id === taskId ? task : t));
       toast({ title: 'Failed to move task', variant: 'error' });
     }
   }
 
-  function openCreate(status: TaskStatus) {
-    setEditTask(null);
-    setDefaultStatus(status);
-    setModalOpen(true);
-  }
-
-  function openEdit(task: Task) {
-    setEditTask(task);
-    setModalOpen(true);
-  }
+  function openCreate(status: TaskStatus) { setEditTask(null); setDefaultStatus(status); setModalOpen(true); }
+  function openEdit(task: Task) { setEditTask(task); setModalOpen(true); }
 
   function handleSaved(saved: Task) {
     setTasks((prev) => {
@@ -237,18 +217,17 @@ export function CsBoard() {
 
   if (loading) {
     return (
-      <div className="py-6 space-y-4 animate-pulse">
+      <div className="py-4 space-y-4 animate-pulse">
         <div className="h-8 w-40 bg-secondary rounded-xl" />
-        <div className="flex gap-4 overflow-x-auto">
-          {COLUMNS.map((c) => <div key={c.status} className="w-64 shrink-0 h-96 bg-secondary rounded-2xl" />)}
+        <div className="grid grid-cols-5 gap-2">
+          {COLUMNS.map((c) => <div key={c.status} className="h-64 bg-secondary rounded-xl" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-4 space-y-5">
-      {/* Header */}
+    <div className="py-4 space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-3xl font-bold tracking-tight2">Tasks</h1>
         <button
@@ -265,7 +244,7 @@ export function CsBoard() {
         <button
           type="button"
           onClick={() => setFilterAssignee('')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
             filterAssignee === '' ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -276,7 +255,7 @@ export function CsBoard() {
             key={a}
             type="button"
             onClick={() => setFilterAssignee(filterAssignee === a ? '' : a)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               filterAssignee === a ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -286,9 +265,9 @@ export function CsBoard() {
         ))}
       </div>
 
-      {/* Kanban board */}
+      {/* Kanban — 5-col grid, no scroll needed */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
+        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
           {COLUMNS.map((col) => (
             <DroppableColumn
               key={col.status}
@@ -303,10 +282,9 @@ export function CsBoard() {
           ))}
         </div>
 
-        {/* Drag overlay — ghost card while dragging */}
         <DragOverlay>
           {activeTask && (
-            <div className="bg-card rounded-2xl p-3.5 shadow-xl border border-border/60 w-[264px] rotate-2 opacity-95">
+            <div className="bg-card rounded-xl p-3 shadow-xl border border-border/60 rotate-1 opacity-95" style={{ width: 180 }}>
               <TaskCardInner task={activeTask} />
             </div>
           )}

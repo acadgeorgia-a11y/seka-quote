@@ -21,7 +21,7 @@ export type TimeSlot = 'morning' | 'afternoon';
 export type MoveType = 'local' | 'long_distance' | 'out_of_state';
 export type PricingMethod = 'cuft' | 'hourly';
 export type QuoteStatus = 'draft' | 'sent' | 'booked' | 'lost';
-export type AgentRole = 'agent' | 'owner' | 'dispatch';
+export type AgentRole = 'agent' | 'owner' | 'dispatch' | 'cs';
 
 export type Agent = {
   id: string;
