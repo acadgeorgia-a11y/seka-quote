@@ -12,7 +12,7 @@ export async function sendChatMessage(messages: ChatMessage[]): Promise<{ reply:
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
     },
     body: JSON.stringify({
       messages: messages.map(({ role, content }) => ({ role, content })),
