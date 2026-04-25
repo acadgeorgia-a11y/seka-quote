@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { AdminGate } from './AdminGate';
 import { cn } from '@/lib/utils';
@@ -13,11 +13,9 @@ const sections = [
 ];
 
 export function AdminShell() {
-  const navigate = useNavigate();
-
   function signOut() {
-    localStorage.removeItem('admin_ok');
-    navigate('/admin');
+    localStorage.removeItem('seka.admin_ok');
+    window.location.href = '/admin';
   }
 
   return (
