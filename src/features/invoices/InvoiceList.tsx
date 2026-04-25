@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Plus, Download, Send } from 'lucide-react';
+import { Plus, Download, Send, Trash2 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/components/ui/toast';
-import { listInvoices, updateInvoiceStatus } from '@/lib/supabase/queries/invoices';
+import { listInvoices, updateInvoiceStatus, deleteInvoice } from '@/lib/supabase/queries/invoices';
 import type { Invoice } from '@/lib/supabase/types';
 import { InvoiceModal } from './InvoiceModal';
 import { InvoicePDFDocument } from './InvoicePDF';
@@ -126,6 +126,9 @@ export function InvoiceList() {
                         ✓ Paid
                       </button>
                     )}
+                    <button type="button" onClick={() => { if (confirm('Delete this invoice?')) deleteInvoice(inv.id).then(reload); }} title="Delete" className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-secondary transition-colors">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </TableCell>
               </TableRow>
