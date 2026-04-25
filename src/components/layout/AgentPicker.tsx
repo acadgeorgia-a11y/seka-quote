@@ -17,8 +17,18 @@ export function AgentPicker() {
 
   const current = agents.find((a) => a.id === agentId);
 
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      const el = document.getElementById('agent-picker-root');
+      if (el && !el.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div className="relative" id="agent-picker-root">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
