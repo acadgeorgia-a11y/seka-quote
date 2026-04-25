@@ -62,7 +62,7 @@ export function TaskModal({ task, defaultStatus = 'not_started', onClose, onSave
         due_date: dueDate || null,
       };
       const saved = task
-        ? await updateTask(task.id, payload)
+        ? await updateTask(task.id, payload, task.assignee)
         : await createTask(payload);
       onSaved(saved);
       toast({ title: task ? 'Task updated' : 'Task created', variant: 'success' });

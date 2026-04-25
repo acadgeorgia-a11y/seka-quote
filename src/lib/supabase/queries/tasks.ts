@@ -6,6 +6,23 @@ const db = supabase as unknown as {
   from: (table: 'tasks') => ReturnType<typeof supabase.from>;
 };
 
+async function notifyAssignee(
+  assignee: string,
+  taskTitle: string,
+  taskDescription: string | null | undefined,
+  priority: string,
+  dueDate: string | null | undefined,
+  isUpdate: boolean,
+) {
+  try {
+    await supabase.functions.invoke('notify-task', {
+      body: { assignee, taskTitle, taskDescription, priority, dueDate, isUpdate },
+    });
+  } catch {
+    // Non-fatal — don't block task save if email fails
+  }
+}
+
 export async function listTasks(): Promise<Task[]> {
   const { data, error } = await db
     .from('tasks')
@@ -22,10 +39,16 @@ export async function createTask(task: TaskInsert): Promise<Task> {
     .select()
     .single();
   if (error) throw new Error((error as { message: string }).message);
-  return data as Task;
+  const saved = data as Task;
+
+  if (saved.assignee) {
+    notifyAssignee(saved.assignee, saved.title, saved.description, saved.priority, saved.due_date, false);
+  }
+
+  return saved;
 }
 
-export async function updateTask(id: string, patch: Partial<TaskInsert>): Promise<Task> {
+export async function updateTask(id: string, patch: Partial<TaskInsert>, previousAssignee?: string | null): Promise<Task> {
   const { data, error } = await db
     .from('tasks')
     .update({ ...patch, updated_at: new Date().toISOString() })
@@ -33,7 +56,14 @@ export async function updateTask(id: string, patch: Partial<TaskInsert>): Promis
     .select()
     .single();
   if (error) throw new Error((error as { message: string }).message);
-  return data as Task;
+  const saved = data as Task;
+
+  // Notify if assignee was just set or changed
+  if (saved.assignee && saved.assignee !== previousAssignee) {
+    notifyAssignee(saved.assignee, saved.title, saved.description, saved.priority, saved.due_date, !!previousAssignee);
+  }
+
+  return saved;
 }
 
 export async function deleteTask(id: string): Promise<void> {
