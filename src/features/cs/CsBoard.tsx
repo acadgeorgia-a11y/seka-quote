@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Circle, BookOpen, Zap, Eye, CheckCircle2 } from 'lucide-react';
-import { listTasks, updateTask } from '@/lib/supabase/queries/tasks';
+import { listTasks } from '@/lib/supabase/queries/tasks';
 import { toast } from '@/components/ui/toast';
 import { TaskModal } from './TaskModal';
 import type { Task, TaskStatus, TaskAssignee } from '@/lib/supabase/types';
@@ -105,16 +105,6 @@ export function CsBoard() {
   function handleDeleted(id: string) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     setModalOpen(false);
-  }
-
-  async function moveTask(task: Task, status: TaskStatus) {
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status } : t)));
-    try {
-      await updateTask(task.id, { status });
-    } catch {
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-      toast({ title: 'Failed to move task', variant: 'error' });
-    }
   }
 
   const filtered = filterAssignee ? tasks.filter((t) => t.assignee === filterAssignee) : tasks;

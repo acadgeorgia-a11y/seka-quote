@@ -235,6 +235,7 @@ export type Database = {
       toll_zones: { Row: TollZone; Insert: Omit<TollZone, 'created_at'> & { created_at?: string }; Update: Partial<TollZone>; Relationships: [] };
       toll_routes: { Row: TollRoute; Insert: Omit<TollRoute, 'id' | 'effective_date' | 'updated_at'> & { id?: string; effective_date?: string; updated_at?: string }; Update: Partial<TollRoute>; Relationships: [] };
       crz_rates: { Row: CrzRate; Insert: Omit<CrzRate, 'id' | 'effective_date'> & { id?: string; effective_date?: string }; Update: Partial<CrzRate>; Relationships: [] };
+      tasks: { Row: Task; Insert: TaskInsert; Update: Partial<TaskInsert>; Relationships: [] };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
