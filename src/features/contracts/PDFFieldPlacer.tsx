@@ -18,8 +18,8 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
   const [pages, setPages] = useState<string[]>([]);
   const [adding, setAdding] = useState<AddingType>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const dragging = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const interacting = useRef(false);
 
   useEffect(() => {
     async function render() {
@@ -40,52 +40,79 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
   }, [pdfUrl]);
 
   function handlePageClick(e: React.MouseEvent<HTMLDivElement>, pageIndex: number) {
-    if (!adding || dragging.current) return;
+    if (!adding || interacting.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    const field: SignatureField = {
+    onChange([...fields, {
       id: crypto.randomUUID(),
       type: adding,
       page: pageIndex + 1,
-      x,
-      y,
+      x, y,
       width: 22,
       height: 7,
-    };
-    onChange([...fields, field]);
+    }]);
     setAdding(null);
   }
 
   function startDrag(e: React.MouseEvent, id: string) {
     e.stopPropagation();
     e.preventDefault();
-    const field = fields.find(f => f.id === id);
-    if (!field) return;
-    dragging.current = { id, startX: e.clientX, startY: e.clientY, origX: field.x, origY: field.y };
+    interacting.current = true;
+    const field = fields.find(f => f.id === id)!;
+    const startX = e.clientX, startY = e.clientY;
+    const origX = field.x, origY = field.y;
 
     function onMove(ev: MouseEvent) {
-      if (!dragging.current || !pageRef.current) return;
+      if (!pageRef.current) return;
       const rect = pageRef.current.getBoundingClientRect();
-      const dx = ((ev.clientX - dragging.current.startX) / rect.width) * 100;
-      const dy = ((ev.clientY - dragging.current.startY) / rect.height) * 100;
-      const newX = Math.max(0, Math.min(78, dragging.current.origX + dx));
-      const newY = Math.max(0, Math.min(93, dragging.current.origY + dy));
-      onChange(fields.map(f => f.id === dragging.current!.id ? { ...f, x: newX, y: newY } : f));
+      const dx = ((ev.clientX - startX) / rect.width) * 100;
+      const dy = ((ev.clientY - startY) / rect.height) * 100;
+      onChange(fields.map(f => f.id === id ? {
+        ...f,
+        x: Math.max(0, Math.min(100 - f.width, origX + dx)),
+        y: Math.max(0, Math.min(100 - f.height, origY + dy)),
+      } : f));
     }
-
     function onUp() {
-      dragging.current = null;
+      interacting.current = false;
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
 
+  function startResize(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    interacting.current = true;
+    const field = fields.find(f => f.id === id)!;
+    const startX = e.clientX, startY = e.clientY;
+    const origW = field.width, origH = field.height;
+
+    function onMove(ev: MouseEvent) {
+      if (!pageRef.current) return;
+      const rect = pageRef.current.getBoundingClientRect();
+      const dw = ((ev.clientX - startX) / rect.width) * 100;
+      const dh = ((ev.clientY - startY) / rect.height) * 100;
+      onChange(fields.map(f => f.id === id ? {
+        ...f,
+        width: Math.max(10, Math.min(100 - f.x, origW + dw)),
+        height: Math.max(4, Math.min(100 - f.y, origH + dh)),
+      } : f));
+    }
+    function onUp() {
+      interacting.current = false;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    }
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   }
 
   function removeField(id: string) {
-    onChange(fields.filter((f) => f.id !== id));
+    onChange(fields.filter(f => f.id !== id));
   }
 
   if (pages.length === 0) {
@@ -96,22 +123,16 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-muted-foreground">Add field:</span>
-        <button
-          type="button"
-          onClick={() => setAdding(adding === 'sender' ? null : 'sender')}
-          className={cn('px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors', adding === 'sender' ? 'bg-blue-500 text-white border-blue-500' : 'border-input hover:bg-secondary')}
-        >
+        <button type="button" onClick={() => setAdding(adding === 'sender' ? null : 'sender')}
+          className={cn('px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors', adding === 'sender' ? 'bg-blue-500 text-white border-blue-500' : 'border-input hover:bg-secondary')}>
           Sender signature
         </button>
-        <button
-          type="button"
-          onClick={() => setAdding(adding === 'client' ? null : 'client')}
-          className={cn('px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors', adding === 'client' ? 'bg-emerald-500 text-white border-emerald-500' : 'border-input hover:bg-secondary')}
-        >
+        <button type="button" onClick={() => setAdding(adding === 'client' ? null : 'client')}
+          className={cn('px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors', adding === 'client' ? 'bg-emerald-500 text-white border-emerald-500' : 'border-input hover:bg-secondary')}>
           Client signature
         </button>
-        {adding && <span className="text-sm text-muted-foreground animate-pulse">Click on the PDF to place the field</span>}
-        {!adding && fields.length > 0 && <span className="text-sm text-muted-foreground">Drag fields to reposition</span>}
+        {adding && <span className="text-sm text-muted-foreground animate-pulse">Click on the PDF to place</span>}
+        {!adding && fields.length > 0 && <span className="text-sm text-muted-foreground">Drag to move · drag corner to resize</span>}
       </div>
 
       {pages.length > 1 && (
@@ -130,7 +151,7 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
           pageIndex + 1 === currentPage && (
             <div key={pageIndex} ref={pageRef} className="relative select-none" onClick={(e) => handlePageClick(e, pageIndex)}>
               <img src={dataUrl} alt={`Page ${pageIndex + 1}`} className="w-full block" draggable={false} />
-              {fields.filter((f) => f.page === pageIndex + 1).map((f) => (
+              {fields.filter(f => f.page === pageIndex + 1).map(f => (
                 <div
                   key={f.id}
                   style={{ left: `${f.x}%`, top: `${f.y}%`, width: `${f.width}%`, height: `${f.height}%`, cursor: 'grab' }}
@@ -139,15 +160,19 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
                   onMouseDown={(e) => startDrag(e, f.id)}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <span>{f.type === 'sender' ? 'Sender' : 'Client'}</span>
-                  <button
-                    type="button"
+                  <span className="truncate">{f.type === 'sender' ? 'Sender' : 'Client'}</span>
+                  <button type="button"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => { e.stopPropagation(); removeField(f.id); }}
-                    className="hover:opacity-70 ml-1"
-                  >
+                    className="hover:opacity-70 ml-1 shrink-0">
                     <Trash2 className="h-3 w-3" />
                   </button>
+                  {/* Resize handle */}
+                  <div
+                    style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, cursor: 'se-resize' }}
+                    className={cn('rounded-tl', f.type === 'sender' ? 'bg-blue-500' : 'bg-emerald-500')}
+                    onMouseDown={(e) => startResize(e, f.id)}
+                  />
                 </div>
               ))}
             </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,7 @@ interface Props {
   onCreated: () => void;
 }
 
-type Step = 'details' | 'sign';
+type Step = 'details' | 'sign' | 'done';
 
 export function ContractSendModal({ templates, onClose, onCreated }: Props) {
   const { agentId } = useAgent();
@@ -28,6 +28,8 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [contractId, setContractId] = useState<string | null>(null);
+  const [signingUrl, setSigningUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function createAndSign() {
     if (!customerName.trim() || !customerEmail.trim()) {
@@ -69,24 +71,21 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
         status: 'sender_signed',
       });
 
-      // Send signing link to customer
-      const contract = await (await import('@/lib/supabase/queries/contracts')).getContractByToken('');
-      const { data: { publicUrl } } = supabase.storage.from('contracts').getPublicUrl('');
-      void publicUrl; void contract;
-
-      // Fetch the contract to get token
       const { data } = await supabase.from('contracts' as never).select('token').eq('id', contractId).single() as { data: { token: string } | null };
       const token = data?.token;
 
       if (token) {
-        const signingUrl = `${window.location.origin}/sign/${token}`;
+        const url = `${window.location.origin}/sign/${token}`;
+        setSigningUrl(url);
+
+        // Try to send email — may not reach customer if Resend domain not verified
         await supabase.functions.invoke('send-contract', {
-          body: { customerEmail, customerName, signingUrl, jobNumber: jobNumber || null },
+          body: { customerEmail, customerName, signingUrl: url, jobNumber: jobNumber || null },
         });
         await updateContract(contractId, { status: 'sent' });
       }
 
-      toast({ title: 'Contract sent to customer for signing', variant: 'success' });
+      setStep('done');
       onCreated();
     } catch (e) {
       toast({ title: 'Failed', description: (e as Error).message, variant: 'error' });
@@ -95,12 +94,20 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
     }
   }
 
+  function copyLink() {
+    if (!signingUrl) return;
+    navigator.clipboard.writeText(signingUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: 'Link copied!', variant: 'success' });
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-background rounded-2xl shadow-lg w-full max-w-lg">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">
-            {step === 'details' ? 'New Contract' : 'Sign Contract'}
+            {step === 'details' ? 'New Contract' : step === 'sign' ? 'Sign Contract' : 'Contract Sent'}
           </h2>
           <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
@@ -157,13 +164,35 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
           {step === 'sign' && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Sign the contract first, then it will be sent to <strong>{customerEmail}</strong> for their signature.
+                Sign first — then a signing link will be generated for <strong>{customerEmail}</strong>.
               </p>
               <SignaturePad
                 label="Draw your signature as the sender"
                 onSave={handleSenderSignature}
                 onCancel={onClose}
               />
+              {saving && <p className="text-sm text-muted-foreground">Sending…</p>}
+            </div>
+          )}
+
+          {step === 'done' && signingUrl && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Contract signed. Share this link with <strong>{customerName}</strong> so they can sign:
+              </p>
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary text-sm font-mono break-all">
+                {signingUrl}
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={copyLink} className="flex-1">
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </Button>
+                <Button variant="outline" onClick={onClose}>Done</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                An email was also sent to {customerEmail} with this link.
+              </p>
             </div>
           )}
         </div>
