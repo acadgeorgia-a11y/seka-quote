@@ -30,13 +30,13 @@ export function InvoiceModal({ onClose, onCreated }: Props) {
   function updateLine(i: number, field: keyof LineItem, raw: string) {
     setLines((prev) => {
       const next = [...prev];
-      const line = { ...next[i] };
+      const line = { ...next[i] } as LineItem;
       if (field === 'description') {
         line.description = raw;
       } else {
         const n = parseFloat(raw) || 0;
         (line as Record<string, unknown>)[field] = n;
-        line.amount = line.quantity * line.unit_price;
+        line.amount = (line.quantity ?? 0) * (line.unit_price ?? 0);
       }
       next[i] = line;
       return next;
