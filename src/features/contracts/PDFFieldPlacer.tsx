@@ -30,7 +30,7 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
         const canvas = document.createElement('canvas');
         canvas.width = vp.width;
         canvas.height = vp.height;
-        await page.render({ canvasContext: canvas.getContext('2d')! as never, viewport: vp }).promise;
+        await page.render({ canvasContext: canvas.getContext('2d')!, viewport: vp } as unknown as Parameters<typeof page.render>[0]).promise;
         rendered.push(canvas.toDataURL());
       }
       setPages(rendered);
