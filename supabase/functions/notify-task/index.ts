@@ -6,10 +6,10 @@ const CORS = {
 };
 
 const ASSIGNEE_EMAILS: Record<string, string> = {
-  Alex:  'alex@sekamoving.com',
-  Terry: 'terry@sekamoving.com',
-  Chris: 'chris@sekamoving.com',
-  Rob:   'rob@sekamoving.com',
+  Alex:  'acadgeorgia@gmail.com',
+  Terry: 'acadgeorgia@gmail.com',
+  Chris: 'acadgeorgia@gmail.com',
+  Rob:   'acadgeorgia@gmail.com',
 };
 
 interface NotifyRequest {
