@@ -15,11 +15,12 @@ async function notifyAssignee(
   isUpdate: boolean,
 ) {
   try {
-    await supabase.functions.invoke('notify-task', {
+    const { error } = await supabase.functions.invoke('notify-task', {
       body: { assignee, taskTitle, taskDescription, priority, dueDate, isUpdate },
     });
-  } catch {
-    // Non-fatal — don't block task save if email fails
+    if (error) console.error('[notify-task]', error);
+  } catch (e) {
+    console.error('[notify-task] invoke failed', e);
   }
 }
 
