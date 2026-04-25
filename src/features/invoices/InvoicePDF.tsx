@@ -1,16 +1,8 @@
-import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import type { Invoice } from '@/lib/supabase/types';
 
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff', fontWeight: 600 },
-  ],
-});
-
 const s = StyleSheet.create({
-  page: { fontFamily: 'Inter', fontSize: 10, color: '#171717', padding: '40 50', backgroundColor: '#fff' },
+  page: { fontSize: 10, color: '#171717', padding: '40 50', backgroundColor: '#fff' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36 },
   logo: { width: 100, height: 40, objectFit: 'contain' },
   invoiceLabel: { fontSize: 24, fontWeight: 600, color: '#171717', textAlign: 'right' },
