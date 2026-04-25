@@ -86,6 +86,7 @@ export function QuoteBuilder() {
     if (!isHourly && cuft < 300) return null;
     if (isHourly && !draft.hours) return null;
     try {
+      console.log('[quote] draft', { move_type: draft.move_type, pricing_method: draft.pricing_method, cuft, hours: draft.hours, tier: draft.tier, isHourly });
       return calculateQuote(
         {
           move_type: draft.move_type,
@@ -113,7 +114,8 @@ export function QuoteBuilder() {
         },
         rateTables,
       );
-    } catch {
+    } catch (e) {
+      console.error('[quote] pricing error', e);
       return null;
     }
   }, [draft, rateTables]);
