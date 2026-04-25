@@ -8,7 +8,6 @@ import { createContract, updateContract } from '@/lib/supabase/queries/contracts
 import { supabase } from '@/lib/supabase/client';
 import { useAgent } from '@/stores/useAgent';
 import type { ContractTemplate } from '@/lib/supabase/types';
-import { SignaturePad } from './SignaturePad';
 
 interface Props {
   templates: ContractTemplate[];
@@ -16,22 +15,18 @@ interface Props {
   onCreated: () => void;
 }
 
-type Step = 'details' | 'sign' | 'done';
-
 export function ContractSendModal({ templates, onClose, onCreated }: Props) {
   const { agentId } = useAgent();
-  const [step, setStep] = useState<Step>('details');
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? '');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [jobNumber, setJobNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
-  const [contractId, setContractId] = useState<string | null>(null);
   const [signingUrl, setSigningUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  async function createAndSign() {
+  async function send() {
     if (!customerName.trim() || !customerEmail.trim()) {
       toast({ title: 'Customer name and email required', variant: 'error' });
       return;
@@ -49,43 +44,24 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
         sender_signed_at: null,
         client_signature: null,
         client_signed_at: null,
-        status: 'draft',
+        status: 'sent',
         signed_pdf_path: null,
       });
-      setContractId(contract.id);
-      setStep('sign');
-    } catch (e) {
-      toast({ title: 'Failed to create contract', description: (e as Error).message, variant: 'error' });
-    } finally {
-      setSaving(false);
-    }
-  }
 
-  async function handleSenderSignature(dataUrl: string) {
-    if (!contractId) return;
-    setSaving(true);
-    try {
-      await updateContract(contractId, {
-        sender_signature: dataUrl,
-        sender_signed_at: new Date().toISOString(),
-        status: 'sender_signed',
-      });
-
-      const { data } = await supabase.from('contracts' as never).select('token').eq('id', contractId).single() as { data: { token: string } | null };
+      const { data } = await supabase.from('contracts' as never).select('token').eq('id', contract.id).single() as { data: { token: string } | null };
       const token = data?.token;
 
       if (token) {
         const url = `${window.location.origin}/sign/${token}`;
         setSigningUrl(url);
 
-        // Try to send email — may not reach customer if Resend domain not verified
         await supabase.functions.invoke('send-contract', {
-          body: { customerEmail, customerName, signingUrl: url, jobNumber: jobNumber || null },
+          body: { customerEmail: customerEmail.trim(), customerName: customerName.trim(), signingUrl: url, jobNumber: jobNumber || null },
         });
-        await updateContract(contractId, { status: 'sent' });
+
+        await updateContract(contract.id, { status: 'sent' });
       }
 
-      setStep('done');
       onCreated();
     } catch (e) {
       toast({ title: 'Failed', description: (e as Error).message, variant: 'error' });
@@ -107,7 +83,7 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
       <div className="bg-background rounded-2xl shadow-lg w-full max-w-lg">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">
-            {step === 'details' ? 'New Contract' : step === 'sign' ? 'Sign Contract' : 'Contract Sent'}
+            {signingUrl ? 'Share Signing Link' : 'Send Contract'}
           </h2>
           <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
@@ -115,7 +91,7 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
         </div>
 
         <div className="p-6 space-y-4">
-          {step === 'details' && (
+          {!signingUrl ? (
             <>
               {templates.length > 1 && (
                 <div className="space-y-1.5">
@@ -154,33 +130,17 @@ export function ContractSendModal({ templates, onClose, onCreated }: Props) {
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <Button variant="outline" onClick={onClose}>Cancel</Button>
-                <Button onClick={createAndSign} disabled={saving}>
-                  {saving ? 'Creating…' : 'Next: Sign →'}
+                <Button onClick={send} disabled={saving}>
+                  {saving ? 'Sending…' : 'Send to Customer'}
                 </Button>
               </div>
             </>
-          )}
-
-          {step === 'sign' && (
+          ) : (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Sign first — then a signing link will be generated for <strong>{customerEmail}</strong>.
+                Copy this link and send it to <strong>{customerName}</strong> — they can open it on any device to sign.
               </p>
-              <SignaturePad
-                label="Draw your signature as the sender"
-                onSave={handleSenderSignature}
-                onCancel={onClose}
-              />
-              {saving && <p className="text-sm text-muted-foreground">Sending…</p>}
-            </div>
-          )}
-
-          {step === 'done' && signingUrl && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Contract signed. Share this link with <strong>{customerName}</strong> so they can sign:
-              </p>
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary text-sm font-mono break-all">
+              <div className="p-3 rounded-xl bg-secondary text-sm font-mono break-all">
                 {signingUrl}
               </div>
               <div className="flex gap-2">

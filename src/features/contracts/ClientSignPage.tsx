@@ -107,12 +107,6 @@ export function ClientSignPage() {
         {/* Signature */}
         <div className="rounded-xl border p-6 space-y-4">
           <h2 className="font-semibold">Your Signature</h2>
-          {contract.sender_signature && (
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Sender already signed</p>
-              <img src={contract.sender_signature} alt="Sender signature" className="h-12 object-contain border rounded-lg p-1 bg-white" />
-            </div>
-          )}
           <SignaturePad
             label="Draw your signature to complete the contract"
             onSave={handleSign}
