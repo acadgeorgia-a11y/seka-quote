@@ -106,17 +106,15 @@ export function TopNav() {
           {visibleSections.map(s => (
             <SectionDropdown key={s.label} label={s.label} links={s.links} />
           ))}
-          {isOwner && (
-            <NavLink
-              to="/admin"
-              className={cn(
-                'px-3.5 py-1.5 text-sm rounded-lg transition-colors font-medium',
-                isAdminActive ? 'bg-accent/10 text-accent' : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-              )}
-            >
-              Admin
-            </NavLink>
-          )}
+          <NavLink
+            to="/admin"
+            className={cn(
+              'px-3.5 py-1.5 text-sm rounded-lg transition-colors font-medium',
+              isAdminActive ? 'bg-accent/10 text-accent' : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+            )}
+          >
+            Admin
+          </NavLink>
         </nav>
 
         <AgentPicker />
