@@ -4,6 +4,7 @@ import {
   createAgent,
   listAllAgents,
   setAgentActive,
+  updateAgentAccess,
 } from '@/lib/supabase/queries/agents';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,9 +30,7 @@ export function AdminAgents() {
     }
   }
 
-  useEffect(() => {
-    reload();
-  }, []);
+  useEffect(() => { reload(); }, []);
 
   async function add() {
     if (!name.trim() || !email.trim()) {
@@ -42,9 +41,7 @@ export function AdminAgents() {
     try {
       await createAgent({ full_name: name.trim(), email: email.trim(), role });
       toast({ title: `Added ${name}`, variant: 'success' });
-      setName('');
-      setEmail('');
-      setRole('agent');
+      setName(''); setEmail(''); setRole('agent');
       reload();
     } catch (e) {
       toast({ title: 'Add failed', description: (e as Error).message, variant: 'error' });
@@ -63,13 +60,24 @@ export function AdminAgents() {
     }
   }
 
+  async function toggleSection(a: Agent, section: 'sales' | 'cs') {
+    const current = a.section_access ?? { sales: true, cs: true };
+    const updated = { ...current, [section]: !current[section] };
+    try {
+      await updateAgentAccess(a.id, updated);
+      setAgents(prev => prev?.map(ag => ag.id === a.id ? { ...ag, section_access: updated } : ag) ?? null);
+    } catch (e) {
+      toast({ title: 'Update failed', description: (e as Error).message, variant: 'error' });
+    }
+  }
+
   if (!agents) return <Skeleton className="h-96" />;
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="font-serif text-3xl tracking-tight2 mb-1">Agents</h2>
-        <p className="text-muted-foreground text-sm">Agents appear in the picker in the top nav. Deactivated agents stay on historical quotes.</p>
+        <h2 className="font-serif text-3xl tracking-tight mb-1">Agents</h2>
+        <p className="text-muted-foreground text-sm">Manage agents and control which sections they can access.</p>
       </div>
 
       <div className="rounded-xl border bg-card p-5">
@@ -111,27 +119,59 @@ export function AdminAgents() {
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="w-40" />
+            <TableHead className="text-center">Sales</TableHead>
+            <TableHead className="text-center">CS</TableHead>
+            <TableHead className="w-32" />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {agents.map((a) => (
-            <TableRow key={a.id}>
-              <TableCell>{a.full_name}</TableCell>
-              <TableCell className="text-muted-foreground">{a.email}</TableCell>
-              <TableCell>
-                <Badge variant={a.role === 'owner' ? 'accent' : 'muted'}>{a.role}</Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={a.active ? 'success' : 'muted'}>{a.active ? 'active' : 'inactive'}</Badge>
-              </TableCell>
-              <TableCell>
-                <Button size="sm" variant="outline" onClick={() => toggleActive(a)}>
-                  {a.active ? 'Deactivate' : 'Reactivate'}
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {agents.map((a) => {
+            const access = a.section_access ?? { sales: true, cs: true };
+            const isOwner = a.role === 'owner';
+            return (
+              <TableRow key={a.id}>
+                <TableCell>{a.full_name}</TableCell>
+                <TableCell className="text-muted-foreground">{a.email}</TableCell>
+                <TableCell>
+                  <Badge variant={a.role === 'owner' ? 'accent' : 'muted'}>{a.role}</Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={a.active ? 'success' : 'muted'}>{a.active ? 'active' : 'inactive'}</Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  {isOwner ? (
+                    <span className="text-xs text-muted-foreground">always</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(a, 'sales')}
+                      className={`w-10 h-5 rounded-full transition-colors ${access.sales ? 'bg-accent' : 'bg-secondary'}`}
+                    >
+                      <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-0.5 ${access.sales ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {isOwner ? (
+                    <span className="text-xs text-muted-foreground">always</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(a, 'cs')}
+                      className={`w-10 h-5 rounded-full transition-colors ${access.cs ? 'bg-accent' : 'bg-secondary'}`}
+                    >
+                      <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-0.5 ${access.cs ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button size="sm" variant="outline" onClick={() => toggleActive(a)}>
+                    {a.active ? 'Deactivate' : 'Reactivate'}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

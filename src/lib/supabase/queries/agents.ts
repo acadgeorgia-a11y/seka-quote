@@ -31,3 +31,8 @@ export async function setAgentActive(id: string, active: boolean) {
   const { error } = await supabase.from('agents').update({ active }).eq('id', id);
   if (error) throw error;
 }
+
+export async function updateAgentAccess(id: string, section_access: { sales: boolean; cs: boolean }) {
+  const { error } = await supabase.from('agents').update({ section_access }).eq('id', id);
+  if (error) throw error;
+}

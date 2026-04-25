@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { AgentPicker } from './AgentPicker';
+import { useAgent } from '@/stores/useAgent';
 import { cn } from '@/lib/utils';
 
 const sections = [
@@ -77,7 +78,18 @@ function SectionDropdown({ label, links }: { label: string; links: { to: string;
 export function TopNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { agent } = useAgent();
   const isAdminActive = location.pathname.startsWith('/admin');
+
+  const isOwner = agent?.role === 'owner';
+  const canSales = isOwner || (agent?.section_access?.sales ?? true);
+  const canCs = isOwner || (agent?.section_access?.cs ?? true);
+
+  const visibleSections = sections.filter(s => {
+    if (s.label === 'Sales') return canSales;
+    if (s.label === 'CS') return canCs;
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
@@ -91,18 +103,20 @@ export function TopNav() {
         </button>
 
         <nav className="hidden md:flex items-center gap-0.5">
-          {sections.map(s => (
+          {visibleSections.map(s => (
             <SectionDropdown key={s.label} label={s.label} links={s.links} />
           ))}
-          <NavLink
-            to="/admin"
-            className={cn(
-              'px-3.5 py-1.5 text-sm rounded-lg transition-colors font-medium',
-              isAdminActive ? 'bg-accent/10 text-accent' : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-            )}
-          >
-            Admin
-          </NavLink>
+          {isOwner && (
+            <NavLink
+              to="/admin"
+              className={cn(
+                'px-3.5 py-1.5 text-sm rounded-lg transition-colors font-medium',
+                isAdminActive ? 'bg-accent/10 text-accent' : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+              )}
+            >
+              Admin
+            </NavLink>
+          )}
         </nav>
 
         <AgentPicker />

@@ -7,7 +7,7 @@ import type { Agent } from '@/lib/supabase/types';
 import { cn } from '@/lib/utils';
 
 export function AgentPicker() {
-  const { agentId, setAgentId } = useAgent();
+  const { agentId, setAgent } = useAgent();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -56,7 +56,7 @@ export function AgentPicker() {
             <button
               key={a.id}
               onClick={() => {
-                setAgentId(a.id);
+                setAgent(a);
                 setOpen(false);
               }}
               className={cn(

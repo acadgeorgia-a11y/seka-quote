@@ -23,12 +23,18 @@ export type PricingMethod = 'cuft' | 'hourly';
 export type QuoteStatus = 'draft' | 'sent' | 'booked' | 'lost';
 export type AgentRole = 'agent' | 'owner' | 'dispatch' | 'cs';
 
+export type SectionAccess = {
+  sales: boolean;
+  cs: boolean;
+};
+
 export type Agent = {
   id: string;
   email: string;
   full_name: string;
   role: AgentRole;
   active: boolean;
+  section_access: SectionAccess;
   created_at: string;
 };
 
