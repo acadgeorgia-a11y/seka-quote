@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 const links = [
   { to: '/new-quote', label: 'New Quote' },
   { to: '/quotes', label: 'Quotes' },
+  { to: '/cs', label: 'CS' },
   { to: '/admin', label: 'Admin' },
 ];
 

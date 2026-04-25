@@ -4,6 +4,7 @@ import { NewQuotePage } from './pages/NewQuotePage';
 import { QuotesPage } from './pages/QuotesPage';
 import { QuoteDetailPage } from './pages/QuoteDetailPage';
 import { AdminPage } from './pages/AdminPage';
+import { CsPage } from './pages/CsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminRatesLocal } from './features/admin/AdminRatesLocal';
 import { AdminRatesLongDistance } from './features/admin/AdminRatesLongDistance';
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: 'new-quote', element: <NewQuotePage /> },
       { path: 'quotes', element: <QuotesPage /> },
       { path: 'quotes/:quoteCode', element: <QuoteDetailPage /> },
+      { path: 'cs', element: <CsPage /> },
       {
         path: 'admin',
         element: <AdminPage />,

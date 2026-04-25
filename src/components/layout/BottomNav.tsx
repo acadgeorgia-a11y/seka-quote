@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { PlusCircle, FileText, Settings2 } from 'lucide-react';
+import { PlusCircle, FileText, ClipboardList, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { to: '/new-quote', label: 'New Quote', icon: PlusCircle },
   { to: '/quotes', label: 'Quotes', icon: FileText },
+  { to: '/cs', label: 'CS', icon: ClipboardList },
   { to: '/admin', label: 'Admin', icon: Settings2 },
 ];
 

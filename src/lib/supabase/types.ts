@@ -1,3 +1,21 @@
+export type TaskStatus = 'not_started' | 'planning' | 'in_progress' | 'review' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskAssignee = 'Alex' | 'Terry' | 'Chris' | 'Rob';
+
+export type Task = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  assignee: TaskAssignee | null;
+  priority: TaskPriority;
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaskInsert = Omit<Task, 'id' | 'created_at' | 'updated_at'>;
+
 export type Tier = 't1' | 't2' | 't3' | 't4' | 't5';
 export type TimeSlot = 'morning' | 'afternoon';
 export type MoveType = 'local' | 'long_distance' | 'out_of_state';
