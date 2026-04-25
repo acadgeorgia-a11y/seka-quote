@@ -99,8 +99,8 @@ export function AiChat() {
     try {
       const { reply, searched } = await sendChatMessage(next);
       setMessages([...next, { role: 'assistant', content: reply, searched }]);
-    } catch {
-      setMessages([...next, { role: 'assistant', content: 'Something went wrong. Please try again.' }]);
+    } catch (e) {
+      setMessages([...next, { role: 'assistant', content: `Error: ${(e as Error).message}` }]);
     } finally {
       setLoading(false);
       setSearching(false);
