@@ -80,8 +80,11 @@ export function QuoteBuilder() {
   const rateTables = useMemo(() => (rates ? bundleToRateTables(rates) : null), [rates]);
 
   const breakdown = useMemo(() => {
-    if (!rateTables || !draft.move_type || !draft.total_cuft) return null;
-    if (draft.total_cuft < 300) return null;
+    if (!rateTables || !draft.move_type) return null;
+    const isHourly = draft.pricing_method === 'hourly';
+    const cuft = draft.total_cuft ?? 300;
+    if (!isHourly && cuft < 300) return null;
+    if (isHourly && !draft.hours) return null;
     try {
       return calculateQuote(
         {
@@ -89,7 +92,7 @@ export function QuoteBuilder() {
           pricing_method: draft.pricing_method,
           tier: draft.tier ?? 't1',
           jobs_on_calendar: draft.jobs_on_calendar ?? 0,
-          total_cuft: draft.total_cuft,
+          total_cuft: cuft,
           time_slot: draft.time_slot,
           hours: draft.hours,
           crew_override: draft.crew_override,

@@ -64,14 +64,14 @@ function hourlyBase(
 }
 
 export function calculateLocal(input: QuoteInput, rates: RateTables): PriceBreakdown {
+  const method = input.pricing_method ?? 'cuft';
   const minCuft = rates.misc.min_cuft ?? 300;
-  if (input.total_cuft < minCuft) {
+  if (method !== 'hourly' && input.total_cuft < minCuft) {
     throw new PricingError('below_min', `Minimum ${minCuft} CuFT for local moves.`);
   }
 
   const crew = resolveCrew(input.total_cuft, input.crew_override);
   const tier = input.tier;
-  const method = input.pricing_method ?? 'cuft';
 
   if (method === 'hourly') {
     const { base, travelItems, travelAmount } = hourlyBase(input, rates, crew, tier);
