@@ -15,10 +15,11 @@ interface Props {
 type AddingType = 'sender' | 'client' | null;
 
 export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<string[]>([]);
   const [adding, setAdding] = useState<AddingType>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const dragging = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function render() {
@@ -39,7 +40,7 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
   }, [pdfUrl]);
 
   function handlePageClick(e: React.MouseEvent<HTMLDivElement>, pageIndex: number) {
-    if (!adding) return;
+    if (!adding || dragging.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -49,11 +50,38 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
       page: pageIndex + 1,
       x,
       y,
-      width: 20,
-      height: 6,
+      width: 22,
+      height: 7,
     };
     onChange([...fields, field]);
     setAdding(null);
+  }
+
+  function startDrag(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    const field = fields.find(f => f.id === id);
+    if (!field) return;
+    dragging.current = { id, startX: e.clientX, startY: e.clientY, origX: field.x, origY: field.y };
+
+    function onMove(ev: MouseEvent) {
+      if (!dragging.current || !pageRef.current) return;
+      const rect = pageRef.current.getBoundingClientRect();
+      const dx = ((ev.clientX - dragging.current.startX) / rect.width) * 100;
+      const dy = ((ev.clientY - dragging.current.startY) / rect.height) * 100;
+      const newX = Math.max(0, Math.min(78, dragging.current.origX + dx));
+      const newY = Math.max(0, Math.min(93, dragging.current.origY + dy));
+      onChange(fields.map(f => f.id === dragging.current!.id ? { ...f, x: newX, y: newY } : f));
+    }
+
+    function onUp() {
+      dragging.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    }
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   }
 
   function removeField(id: string) {
@@ -83,6 +111,7 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
           Client signature
         </button>
         {adding && <span className="text-sm text-muted-foreground animate-pulse">Click on the PDF to place the field</span>}
+        {!adding && fields.length > 0 && <span className="text-sm text-muted-foreground">Drag fields to reposition</span>}
       </div>
 
       {pages.length > 1 && (
@@ -96,21 +125,27 @@ export function PDFFieldPlacer({ pdfUrl, fields, onChange }: Props) {
         </div>
       )}
 
-      <div ref={containerRef} className="relative border rounded-xl overflow-hidden" style={{ cursor: adding ? 'crosshair' : 'default' }}>
+      <div className="relative border rounded-xl overflow-hidden" style={{ cursor: adding ? 'crosshair' : 'default' }}>
         {pages.map((dataUrl, pageIndex) => (
           pageIndex + 1 === currentPage && (
-            <div key={pageIndex} className="relative" onClick={(e) => handlePageClick(e, pageIndex)}>
+            <div key={pageIndex} ref={pageRef} className="relative select-none" onClick={(e) => handlePageClick(e, pageIndex)}>
               <img src={dataUrl} alt={`Page ${pageIndex + 1}`} className="w-full block" draggable={false} />
               {fields.filter((f) => f.page === pageIndex + 1).map((f) => (
                 <div
                   key={f.id}
-                  style={{ left: `${f.x}%`, top: `${f.y}%`, width: `${f.width}%`, height: `${f.height}%` }}
-                  className={cn('absolute border-2 rounded flex items-center justify-between px-1 text-xs font-medium',
+                  style={{ left: `${f.x}%`, top: `${f.y}%`, width: `${f.width}%`, height: `${f.height}%`, cursor: 'grab' }}
+                  className={cn('absolute border-2 rounded flex items-center justify-between px-1 text-xs font-medium shadow-sm',
                     f.type === 'sender' ? 'border-blue-500 bg-blue-500/10 text-blue-700' : 'border-emerald-500 bg-emerald-500/10 text-emerald-700')}
+                  onMouseDown={(e) => startDrag(e, f.id)}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <span>{f.type === 'sender' ? 'Sender' : 'Client'}</span>
-                  <button type="button" onClick={() => removeField(f.id)} className="hover:opacity-70">
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); removeField(f.id); }}
+                    className="hover:opacity-70 ml-1"
+                  >
                     <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
