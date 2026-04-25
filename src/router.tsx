@@ -12,7 +12,6 @@ import { AdminRatesAddons } from './features/admin/AdminRatesAddons';
 import { AdminSettings } from './features/admin/AdminSettings';
 import { AdminAgents } from './features/admin/AdminAgents';
 import { AdminTolls } from './features/admin/AdminTolls';
-import { AdminCsReps } from './features/admin/AdminCsReps';
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +35,6 @@ export const router = createBrowserRouter([
           { path: 'settings', element: <AdminSettings /> },
           { path: 'agents', element: <AdminAgents /> },
           { path: 'tolls', element: <AdminTolls /> },
-          { path: 'cs-reps', element: <AdminCsReps /> },
         ],
       },
     ],

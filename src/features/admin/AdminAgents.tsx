@@ -93,6 +93,7 @@ export function AdminAgents() {
               <option value="agent">agent</option>
               <option value="owner">owner</option>
               <option value="dispatch">dispatch</option>
+              <option value="cs">cs</option>
             </select>
           </div>
           <div className="flex items-end">
