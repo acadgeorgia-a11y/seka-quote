@@ -5,6 +5,8 @@ import { QuotesPage } from './pages/QuotesPage';
 import { QuoteDetailPage } from './pages/QuoteDetailPage';
 import { AdminPage } from './pages/AdminPage';
 import { CsPage } from './pages/CsPage';
+import { InvoicesPage } from './pages/InvoicesPage';
+import { ContractsPage } from './pages/ContractsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminRatesLocal } from './features/admin/AdminRatesLocal';
 import { AdminRatesLongDistance } from './features/admin/AdminRatesLongDistance';
@@ -12,8 +14,13 @@ import { AdminRatesAddons } from './features/admin/AdminRatesAddons';
 import { AdminSettings } from './features/admin/AdminSettings';
 import { AdminAgents } from './features/admin/AdminAgents';
 import { AdminTolls } from './features/admin/AdminTolls';
+import { ClientSignPage } from './features/contracts/ClientSignPage';
 
 export const router = createBrowserRouter([
+  {
+    path: '/sign/:token',
+    element: <ClientSignPage />,
+  },
   {
     path: '/',
     element: <AppShell />,
@@ -24,6 +31,8 @@ export const router = createBrowserRouter([
       { path: 'quotes', element: <QuotesPage /> },
       { path: 'quotes/:quoteCode', element: <QuoteDetailPage /> },
       { path: 'cs', element: <CsPage /> },
+      { path: 'invoices', element: <InvoicesPage /> },
+      { path: 'contracts', element: <ContractsPage /> },
       {
         path: 'admin',
         element: <AdminPage />,

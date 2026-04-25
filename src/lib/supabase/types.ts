@@ -219,6 +219,73 @@ export type QuoteInsert = {
   status?: QuoteStatus;
 };
 
+export type InvoiceStatus = 'draft' | 'sent' | 'paid';
+export type ContractStatus = 'draft' | 'sender_signed' | 'sent' | 'completed';
+
+export type LineItem = {
+  description: string;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+};
+
+export type SignatureField = {
+  id: string;
+  type: 'sender' | 'client';
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type Invoice = {
+  id: string;
+  invoice_number: string;
+  agent_id: string | null;
+  customer_name: string;
+  customer_email: string | null;
+  job_number: string | null;
+  line_items: LineItem[];
+  subtotal: number;
+  tax_pct: number;
+  total: number;
+  notes: string | null;
+  status: InvoiceStatus;
+  created_at: string;
+};
+
+export type InvoiceInsert = Omit<Invoice, 'id' | 'created_at'> & { id?: string; created_at?: string };
+
+export type ContractTemplate = {
+  id: string;
+  name: string;
+  storage_path: string;
+  signature_fields: SignatureField[];
+  active: boolean;
+  created_at: string;
+};
+
+export type Contract = {
+  id: string;
+  template_id: string | null;
+  token: string;
+  agent_id: string | null;
+  customer_name: string;
+  customer_email: string;
+  job_number: string | null;
+  notes: string | null;
+  sender_signature: string | null;
+  sender_signed_at: string | null;
+  client_signature: string | null;
+  client_signed_at: string | null;
+  status: ContractStatus;
+  signed_pdf_path: string | null;
+  created_at: string;
+};
+
+export type ContractInsert = Omit<Contract, 'id' | 'token' | 'created_at'> & { id?: string; token?: string; created_at?: string };
+
 export type Database = {
   public: {
     Tables: {
@@ -236,6 +303,9 @@ export type Database = {
       toll_routes: { Row: TollRoute; Insert: Omit<TollRoute, 'id' | 'effective_date' | 'updated_at'> & { id?: string; effective_date?: string; updated_at?: string }; Update: Partial<TollRoute>; Relationships: [] };
       crz_rates: { Row: CrzRate; Insert: Omit<CrzRate, 'id' | 'effective_date'> & { id?: string; effective_date?: string }; Update: Partial<CrzRate>; Relationships: [] };
       tasks: { Row: Task; Insert: TaskInsert; Update: Partial<TaskInsert>; Relationships: [] };
+      invoices: { Row: Invoice; Insert: InvoiceInsert; Update: Partial<InvoiceInsert>; Relationships: [] };
+      contract_templates: { Row: ContractTemplate; Insert: Omit<ContractTemplate, 'id' | 'created_at'> & { id?: string; created_at?: string }; Update: Partial<ContractTemplate>; Relationships: [] };
+      contracts: { Row: Contract; Insert: ContractInsert; Update: Partial<ContractInsert>; Relationships: [] };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

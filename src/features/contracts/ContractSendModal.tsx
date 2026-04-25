@@ -1,0 +1,173 @@
+import { useState } from 'react';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/toast';
+import { createContract, updateContract } from '@/lib/supabase/queries/contracts';
+import { supabase } from '@/lib/supabase/client';
+import { useAgent } from '@/stores/useAgent';
+import type { ContractTemplate } from '@/lib/supabase/types';
+import { SignaturePad } from './SignaturePad';
+
+interface Props {
+  templates: ContractTemplate[];
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+type Step = 'details' | 'sign';
+
+export function ContractSendModal({ templates, onClose, onCreated }: Props) {
+  const { agentId } = useAgent();
+  const [step, setStep] = useState<Step>('details');
+  const [templateId, setTemplateId] = useState(templates[0]?.id ?? '');
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [jobNumber, setJobNumber] = useState('');
+  const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [contractId, setContractId] = useState<string | null>(null);
+
+  async function createAndSign() {
+    if (!customerName.trim() || !customerEmail.trim()) {
+      toast({ title: 'Customer name and email required', variant: 'error' });
+      return;
+    }
+    setSaving(true);
+    try {
+      const contract = await createContract({
+        template_id: templateId,
+        agent_id: agentId,
+        customer_name: customerName.trim(),
+        customer_email: customerEmail.trim(),
+        job_number: jobNumber.trim() || null,
+        notes: notes.trim() || null,
+        sender_signature: null,
+        sender_signed_at: null,
+        client_signature: null,
+        client_signed_at: null,
+        status: 'draft',
+        signed_pdf_path: null,
+      });
+      setContractId(contract.id);
+      setStep('sign');
+    } catch (e) {
+      toast({ title: 'Failed to create contract', description: (e as Error).message, variant: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSenderSignature(dataUrl: string) {
+    if (!contractId) return;
+    setSaving(true);
+    try {
+      await updateContract(contractId, {
+        sender_signature: dataUrl,
+        sender_signed_at: new Date().toISOString(),
+        status: 'sender_signed',
+      });
+
+      // Send signing link to customer
+      const contract = await (await import('@/lib/supabase/queries/contracts')).getContractByToken('');
+      const { data: { publicUrl } } = supabase.storage.from('contracts').getPublicUrl('');
+      void publicUrl; void contract;
+
+      // Fetch the contract to get token
+      const { data } = await supabase.from('contracts' as never).select('token').eq('id', contractId).single() as { data: { token: string } | null };
+      const token = data?.token;
+
+      if (token) {
+        const signingUrl = `${window.location.origin}/sign/${token}`;
+        await supabase.functions.invoke('send-contract', {
+          body: { customerEmail, customerName, signingUrl, jobNumber: jobNumber || null },
+        });
+        await updateContract(contractId, { status: 'sent' });
+      }
+
+      toast({ title: 'Contract sent to customer for signing', variant: 'success' });
+      onCreated();
+    } catch (e) {
+      toast({ title: 'Failed', description: (e as Error).message, variant: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-background rounded-2xl shadow-lg w-full max-w-lg">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold">
+            {step === 'details' ? 'New Contract' : 'Sign Contract'}
+          </h2>
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {step === 'details' && (
+            <>
+              {templates.length > 1 && (
+                <div className="space-y-1.5">
+                  <Label>Template</Label>
+                  <select
+                    value={templateId}
+                    onChange={(e) => setTemplateId(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label>Customer Name *</Label>
+                <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="John Smith" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Customer Email *</Label>
+                <Input value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="john@example.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Job #</Label>
+                <Input value={jobNumber} onChange={(e) => setJobNumber(e.target.value)} placeholder="JOB-001" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Notes</Label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={createAndSign} disabled={saving}>
+                  {saving ? 'Creating…' : 'Next: Sign →'}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === 'sign' && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Sign the contract first, then it will be sent to <strong>{customerEmail}</strong> for their signature.
+              </p>
+              <SignaturePad
+                label="Draw your signature as the sender"
+                onSave={handleSenderSignature}
+                onCancel={onClose}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
