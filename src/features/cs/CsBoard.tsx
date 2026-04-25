@@ -219,8 +219,10 @@ export function CsBoard() {
     return (
       <div className="py-4 space-y-4 animate-pulse">
         <div className="h-8 w-40 bg-secondary rounded-xl" />
-        <div className="grid grid-cols-5 gap-2">
-          {COLUMNS.map((c) => <div key={c.status} className="h-64 bg-secondary rounded-xl" />)}
+        <div className="overflow-x-auto -mx-4 px-4 md:overflow-visible md:mx-0 md:px-0">
+          <div className="grid gap-2 min-w-[900px] md:min-w-0" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
+            {COLUMNS.map((c) => <div key={c.status} className="h-64 bg-secondary rounded-xl" />)}
+          </div>
         </div>
       </div>
     );
@@ -265,9 +267,10 @@ export function CsBoard() {
         ))}
       </div>
 
-      {/* Kanban — 5-col grid, no scroll needed */}
+      {/* Kanban — horizontal scroll on mobile, 5-col grid on desktop */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 md:overflow-visible md:mx-0 md:px-0">
+        <div className="grid gap-2 min-w-[900px] md:min-w-0" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
           {COLUMNS.map((col) => (
             <DroppableColumn
               key={col.status}
@@ -280,6 +283,7 @@ export function CsBoard() {
               onCardClick={openEdit}
             />
           ))}
+        </div>
         </div>
 
         <DragOverlay>

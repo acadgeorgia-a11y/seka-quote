@@ -1,15 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { PlusCircle, FileText, ClipboardList, Settings2, Receipt, FilePen } from 'lucide-react';
+import { PlusCircle, FileText, ClipboardList, Receipt, FilePen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAgent } from '@/stores/useAgent';
 
 const allTabs = [
-  { to: '/new-quote', label: 'New Quote', icon: PlusCircle, section: 'sales' },
-  { to: '/quotes',    label: 'Quotes',    icon: FileText,     section: 'sales' },
+  { to: '/new-quote', label: 'New Quote', icon: PlusCircle,   section: 'sales' },
+  { to: '/quotes',    label: 'Quotes',    icon: FileText,      section: 'sales' },
   { to: '/cs',        label: 'Tasks',     icon: ClipboardList, section: 'cs' },
-  { to: '/invoices',  label: 'Invoices',  icon: Receipt,      section: 'cs' },
-  { to: '/contracts', label: 'Contracts', icon: FilePen,      section: 'cs' },
-  { to: '/admin',     label: 'Admin',     icon: Settings2,    section: 'admin' },
+  { to: '/invoices',  label: 'Invoices',  icon: Receipt,       section: 'cs' },
+  { to: '/contracts', label: 'Contracts', icon: FilePen,       section: 'cs' },
 ];
 
 export function BottomNav() {
