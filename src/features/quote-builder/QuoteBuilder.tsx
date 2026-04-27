@@ -83,7 +83,6 @@ export function QuoteBuilder() {
     if (!rateTables || !draft.move_type) return null;
     const isHourly = draft.pricing_method === 'hourly';
     const cuft = draft.total_cuft ?? 300;
-    if (!isHourly && cuft < 300) return null;
     if (isHourly && (draft.hours ?? 3) < 3) return null;
     try {
         return calculateQuote(

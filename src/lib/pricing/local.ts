@@ -20,12 +20,15 @@ function cuftBase(
   const cuftRate = rates.localCuft.find((r) => r.tier === tier);
   if (!cuftRate) throw new PricingError('rates_missing', `No CuFT rate for tier ${tier}`);
   const perCuft = slot === 'morning' ? Number(cuftRate.morning) : Number(cuftRate.afternoon);
-  const amount = input.total_cuft * perCuft;
+  // Base is charged at minimum 300 CuFT even for smaller jobs.
+  const minCuft = rates.misc.min_cuft ?? 300;
+  const billedCuft = Math.max(input.total_cuft, minCuft);
+  const amount = billedCuft * perCuft;
   const base: LineItem = {
-    label: `${slot === 'morning' ? 'Morning' : 'Afternoon'} base — ${input.total_cuft} CuFT`,
+    label: `${slot === 'morning' ? 'Morning' : 'Afternoon'} base — ${billedCuft} CuFT${billedCuft > input.total_cuft ? ' (min)' : ''}`,
     amount,
     category: 'base',
-    detail: `${input.total_cuft} × $${perCuft.toFixed(2)}/CuFT`,
+    detail: `${billedCuft} × $${perCuft.toFixed(2)}/CuFT`,
   };
 
   // Flat-rate travel: straight mileage formula + tolls, no hourly comparison.
@@ -65,10 +68,6 @@ function hourlyBase(
 
 export function calculateLocal(input: QuoteInput, rates: RateTables): PriceBreakdown {
   const method = input.pricing_method ?? 'cuft';
-  const minCuft = rates.misc.min_cuft ?? 300;
-  if (method !== 'hourly' && input.total_cuft < minCuft) {
-    throw new PricingError('below_min', `Minimum ${minCuft} CuFT for local moves.`);
-  }
 
   const crew = resolveCrew(input.total_cuft, input.crew_override);
   const tier = input.tier;
