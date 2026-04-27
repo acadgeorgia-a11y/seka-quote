@@ -42,12 +42,12 @@ export function Step2JobDetails({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Total CuFT <span className="normal-case font-normal">(min 300)</span>
+            Total CuFT <span className="normal-case font-normal text-muted-foreground/70">(billed min 300)</span>
           </Label>
           <NumberInput
-            value={draft.total_cuft ?? 300}
-            onChange={(n) => update({ total_cuft: Math.max(300, n) })}
-            min={300} step={10}
+            value={draft.total_cuft ?? 0}
+            onChange={(n) => update({ total_cuft: Math.max(0, n) })}
+            min={0} step={10}
           />
         </div>
         <div className="space-y-1.5">

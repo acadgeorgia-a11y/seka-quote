@@ -82,7 +82,7 @@ export function QuoteBuilder() {
   const breakdown = useMemo(() => {
     if (!rateTables || !draft.move_type) return null;
     const isHourly = draft.pricing_method === 'hourly';
-    const cuft = draft.total_cuft ?? 300;
+    const cuft = draft.total_cuft ?? 0;
     if (isHourly && (draft.hours ?? 3) < 3) return null;
     try {
         return calculateQuote(
