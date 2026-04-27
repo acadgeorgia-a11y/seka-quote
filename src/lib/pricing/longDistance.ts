@@ -1,5 +1,5 @@
 import type { LineItem, PriceBreakdown, QuoteInput, RateTables } from './types';
-import { PricingError } from './types';
+import { PricingError } from './types'; // still used for state_required / state_rate_missing
 import { resolveCrew } from './crew';
 import { buildAddons, finalize } from './assemble';
 
@@ -11,9 +11,8 @@ import { buildAddons, finalize } from './assemble';
  */
 export function calculateLongDistance(input: QuoteInput, rates: RateTables): PriceBreakdown {
   const minCuft = rates.misc.min_cuft ?? 300;
-  if (input.total_cuft < minCuft) {
-    throw new PricingError('below_min', `Minimum ${minCuft} CuFT for long-distance moves.`);
-  }
+  const billedCuft = Math.max(input.total_cuft, minCuft);
+
   if (!input.destination_state) {
     throw new PricingError('state_required', 'Destination state is required for long-distance moves.');
   }
@@ -27,12 +26,12 @@ export function calculateLongDistance(input: QuoteInput, rates: RateTables): Pri
 
   const perCuft = Number(rateRow.rate_per_cuft);
   const markup = 1.1; // built-in 10%
-  const baseAmount = input.total_cuft * perCuft * markup;
+  const baseAmount = billedCuft * perCuft * markup;
   const base: LineItem = {
-    label: `Long-distance base — ${input.total_cuft} CuFT → ${rateRow.state_code}`,
+    label: `Long-distance base — ${billedCuft} CuFT → ${rateRow.state_code}${billedCuft > input.total_cuft ? ' (min)' : ''}`,
     amount: baseAmount,
     category: 'base',
-    detail: `${input.total_cuft} × $${perCuft.toFixed(2)} × 1.10 (incl. travel/tolls/truck)`,
+    detail: `${billedCuft} × $${perCuft.toFixed(2)} × 1.10 (incl. travel/tolls/truck)`,
   };
 
   const crew = resolveCrew(input.total_cuft, input.crew_override);
