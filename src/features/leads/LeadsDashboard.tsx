@@ -261,13 +261,8 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
               {agentRows.map(([name, d], i) => (
                 <tr key={name} className={`border-b border-border/20 hover:bg-secondary/30 transition-colors ${i % 2 === 0 ? '' : 'bg-secondary/10'}`}>
                   <td className="py-2.5 font-semibold">{name}</td>
-                  <td className="py-2.5 text-right"><BarCell value={d.leads} max={maxAgentLeads} color="bg-violet-500" /></td>
-                  <td className="py-2.5 text-right">
-                    <span className="inline-flex items-center gap-1">
-                      <Badge status="booked" />
-                      <span className="tabular-nums font-medium">{d.booked}</span>
-                    </span>
-                  </td>
+                  <td className="py-2.5 text-right tabular-nums">{d.leads}</td>
+                  <td className="py-2.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">{d.booked}</td>
                   <td className="py-2.5 text-right"><PctCell value={d.booked} max={d.leads} /></td>
                   <td className="py-2.5 text-right tabular-nums font-medium">{moneyFull(d.totalRev)}</td>
                   <td className="py-2.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400">{moneyFull(d.bookedRev)}</td>
@@ -310,7 +305,7 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
               {sourceRows.map(([src, d], i) => (
                 <tr key={src} className={`border-b border-border/20 hover:bg-secondary/30 transition-colors ${i % 2 === 0 ? '' : 'bg-secondary/10'}`}>
                   <td className="py-2.5 font-medium">{src}</td>
-                  <td className="py-2.5 text-right"><BarCell value={d.leads} max={maxSourceLeads} color="bg-violet-500" /></td>
+                  <td className="py-2.5 text-right tabular-nums">{d.leads}</td>
                   <td className="py-2.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">{d.booked}</td>
                   <td className="py-2.5 text-right"><PctCell value={d.booked} max={d.leads} /></td>
                   <td className="py-2.5 text-right tabular-nums">{moneyFull(d.rev)}</td>
@@ -330,14 +325,8 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
               {branchRows.map(([branch, d]) => (
                 <div key={branch} className="flex items-center gap-3">
                   <span className="text-sm font-medium w-28 truncate">{branch}</span>
-                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-violet-500 transition-all"
-                      style={{ width: `${Math.round((d.leads / leads.length) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-xs tabular-nums text-muted-foreground w-6 text-right">{d.leads}</span>
-                  <PctCell value={d.booked} max={d.leads} />
+                  <span className="text-xs tabular-nums text-muted-foreground">{d.leads} leads</span>
+                  <span className="ml-auto"><PctCell value={d.booked} max={d.leads} /></span>
                 </div>
               ))}
             </div>
