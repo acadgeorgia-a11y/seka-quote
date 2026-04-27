@@ -11,7 +11,7 @@ type Likelihood = 'booked' | 'lost' | 'pending';
 function mapLikelihood(raw: string): Likelihood {
   const s = raw.toLowerCase().trim();
   if (s.startsWith('bad') || s.includes('lost')) return 'lost';
-  if (s === 'closed' || s === 'completed') return 'booked';
+  if (s === 'closed' || s === 'completed' || s.includes('booked')) return 'booked';
   return 'pending';
 }
 
