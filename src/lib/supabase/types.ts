@@ -345,6 +345,8 @@ export type Database = {
       invoices: { Row: Invoice; Insert: InvoiceInsert; Update: Partial<InvoiceInsert>; Relationships: [] };
       contract_templates: { Row: ContractTemplate; Insert: Omit<ContractTemplate, 'id' | 'created_at'> & { id?: string; created_at?: string }; Update: Partial<ContractTemplate>; Relationships: [] };
       contracts: { Row: Contract; Insert: ContractInsert; Update: Partial<ContractInsert>; Relationships: [] };
+      leads: { Row: Lead; Insert: Omit<Lead, 'id' | 'created_at'>; Update: Partial<Lead>; Relationships: [] };
+      lead_sync_logs: { Row: LeadSyncLog; Insert: Omit<LeadSyncLog, 'id' | 'synced_at'> & { synced_at?: string }; Update: Partial<LeadSyncLog>; Relationships: [] };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
