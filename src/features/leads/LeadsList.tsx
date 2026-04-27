@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { Lead, LeadLikelihood } from '@/lib/supabase/types';
+import { updateLeadSource } from '@/lib/supabase/queries/leads';
 
 const LIKELIHOOD_LABEL: Record<LeadLikelihood, string> = {
   booked:  'Booked',
@@ -31,13 +32,94 @@ function fmt(val: string | null, type: 'date' | 'money' | 'text' = 'text') {
   return val ?? '—';
 }
 
-export function LeadsList({ leads }: { leads: Lead[] }) {
+const KNOWN_SOURCES = [
+  'Google Search',
+  'Referral - Customer',
+  'Referral - Broker/Realtor',
+  'Repeat Customer',
+  'Thumbtack',
+  'Yelp',
+  'Facebook',
+  'Instagram',
+  'Other',
+  'Email',
+  'Postcard',
+  'Saw a Truck',
+];
+
+function SourceCell({ lead, onUpdate }: { lead: Lead; onUpdate: (id: string, source: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue]     = useState(normalizeSource(lead.referral_source));
+  const [saving, setSaving]   = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  async function save() {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === normalizeSource(lead.referral_source)) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateLeadSource(lead.id, trimmed);
+      onUpdate(lead.id, trimmed);
+    } catch { /* silent — value reverts */ }
+    setSaving(false);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 min-w-[160px]">
+        <input
+          ref={inputRef}
+          list="source-options"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onBlur={save}
+          onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false); }}
+          className="h-7 w-full px-2 rounded-lg border border-accent/50 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/30"
+        />
+        <datalist id="source-options">
+          {KNOWN_SOURCES.map(s => <option key={s} value={s} />)}
+        </datalist>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => { setValue(normalizeSource(lead.referral_source)); setEditing(true); }}
+      disabled={saving}
+      className="text-left whitespace-nowrap hover:text-accent hover:underline underline-offset-2 transition-colors disabled:opacity-50"
+      title="Click to edit"
+    >
+      {saving ? '…' : normalizeSource(lead.referral_source)}
+    </button>
+  );
+}
+
+export function LeadsList({ leads: initialLeads, onLeadsChange }: { leads: Lead[]; onLeadsChange?: (leads: Lead[]) => void }) {
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
+
+  useEffect(() => { setLeads(initialLeads); }, [initialLeads]);
+
+  function handleSourceUpdate(id: string, newSource: string) {
+    const updated = leads.map(l => l.id === id ? { ...l, referral_source: newSource } : l);
+    setLeads(updated);
+    onLeadsChange?.(updated);
+  }
   const [search, setSearch]       = useState('');
   const [agent, setAgent]         = useState('');
   const [status, setStatus]       = useState<LeadLikelihood | ''>('');
   const [source, setSource]       = useState('');
 
-  const agents  = useMemo(() => [...new Set(leads.map(l => l.sales_person).filter(Boolean))].sort(), [leads]);
+  const agents  = useMemo(() => [...new Set(leads.map(l => l.sales_person).filter(Boolean))].sort() as string[], [leads]);
   const sources = useMemo(() => [...new Set(leads.map(l => normalizeSource(l.referral_source)))].sort(), [leads]);
 
   const filtered = useMemo(() => leads.filter(l => {
@@ -111,7 +193,7 @@ export function LeadsList({ leads }: { leads: Lead[] }) {
               <tr key={l.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                 <td className="px-3 py-2.5 font-mono text-xs font-medium">{l.quote_number}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap">{l.sales_person ?? '—'}</td>
-                <td className="px-3 py-2.5 whitespace-nowrap">{normalizeSource(l.referral_source)}</td>
+                <td className="px-3 py-2.5"><SourceCell lead={l} onUpdate={handleSourceUpdate} /></td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{l.service_type ?? '—'}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{fmt(l.received_at, 'date')}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{fmt(l.service_date, 'date')}</td>

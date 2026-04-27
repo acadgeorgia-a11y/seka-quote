@@ -10,6 +10,14 @@ export async function listLeads(): Promise<Lead[]> {
   return data as Lead[];
 }
 
+export async function updateLeadSource(id: string, referral_source: string): Promise<void> {
+  const { error } = await supabase
+    .from('leads')
+    .update({ referral_source, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
 export async function listSyncLogs(): Promise<LeadSyncLog[]> {
   const { data, error } = await supabase
     .from('lead_sync_logs')

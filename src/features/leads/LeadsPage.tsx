@@ -55,7 +55,7 @@ export function LeadsPage() {
         ))}
       </div>
 
-      {tab === 'list'      && <LeadsList      leads={leads} />}
+      {tab === 'list'      && <LeadsList      leads={leads} onLeadsChange={setLeads} />}
       {tab === 'dashboard' && <LeadsDashboard leads={leads} />}
 
       {leads.length === 0 && !loading && (
