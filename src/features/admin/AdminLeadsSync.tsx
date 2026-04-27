@@ -1,13 +1,112 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { supabase } from '@/lib/supabase/client';
 import { listSyncLogs } from '@/lib/supabase/queries/leads';
 import { toast } from '@/components/ui/toast';
 import type { LeadSyncLog } from '@/lib/supabase/types';
 
+type Likelihood = 'booked' | 'lost' | 'pending';
+
+function mapLikelihood(raw: string): Likelihood {
+  const s = raw.toLowerCase().trim();
+  if (s.startsWith('bad') || s.includes('lost')) return 'lost';
+  if (s === 'closed' || s === 'completed') return 'booked';
+  return 'pending';
+}
+
+const PATTERNS: [RegExp, string][] = [
+  [/quote.*#|quote.*num|job.*#/i,       'quote_number'],
+  [/branch.*name|branch/i,              'branch_name'],
+  [/^status$/i,                         'status_raw'],
+  [/service.*type/i,                    'service_type'],
+  [/volume.*weight/i,                   'volume_weight'],
+  [/received.*at/i,                     'received_at'],
+  [/service.*date/i,                    'service_date'],
+  [/quote.*sent/i,                      'quote_sent_at'],
+  [/sales.*person|salesperson/i,        'sales_person'],
+  [/^estimator$/i,                      'estimator'],
+  [/move.*coord|coordinator/i,          'move_coordinator'],
+  [/time.*to.*contact/i,                'time_to_contact'],
+  [/last.*comm/i,                       'last_communication_at'],
+  [/referral.*source|lead.*source/i,    'referral_source'],
+  [/estimated.*revenue|est.*revenue/i,  'estimated_revenue'],
+];
+
+function matchHeader(h: string): string | null {
+  for (const [re, field] of PATTERNS) {
+    if (re.test(String(h).trim())) return field;
+  }
+  return null;
+}
+
+function toIso(val: unknown): string | null {
+  if (!val) return null;
+  if (val instanceof Date) return val.toISOString();
+  const d = new Date(String(val));
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function toDateOnly(val: unknown): string | null {
+  const iso = toIso(val);
+  return iso != null ? (iso.split('T')[0] ?? null) : null;
+}
+
+function toMoney(val: unknown): number | null {
+  if (val == null) return null;
+  if (typeof val === 'number') return val;
+  const n = parseFloat(String(val).replace(/[$,\s]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function parseExcel(buffer: ArrayBuffer) {
+  const wb   = XLSX.read(buffer, { type: 'array', cellDates: true });
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const ws   = wb.Sheets[wb.SheetNames[0]!]!;
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: null });
+
+  if (rows.length < 2) return [];
+
+  const headers = (rows[0] as unknown[]).map(h => matchHeader(String(h ?? '')));
+  const colOf   = (field: string) => headers.indexOf(field);
+  const now     = new Date().toISOString();
+
+  return rows.slice(1)
+    .filter((row: unknown[]) => {
+      const i = colOf('quote_number');
+      return i >= 0 && row[i] != null;
+    })
+    .map((row: unknown[]) => {
+      const r   = row;
+      const get = (f: string) => { const i = colOf(f); return i >= 0 ? r[i] : null; };
+      const statusRaw = String(get('status_raw') ?? '').trim();
+      return {
+        quote_number:          String(get('quote_number')).trim(),
+        branch_name:           get('branch_name') ? String(get('branch_name')).trim() : null,
+        status_raw:            statusRaw,
+        likelihood:            mapLikelihood(statusRaw),
+        service_type:          get('service_type') ? String(get('service_type')).trim() : null,
+        volume_weight:         get('volume_weight') ? String(get('volume_weight')).trim() : null,
+        received_at:           toIso(get('received_at')),
+        service_date:          toDateOnly(get('service_date')),
+        quote_sent_at:         toIso(get('quote_sent_at')),
+        sales_person:          get('sales_person') ? String(get('sales_person')).trim() : null,
+        estimator:             get('estimator') ? String(get('estimator')).trim() : null,
+        move_coordinator:      get('move_coordinator') ? String(get('move_coordinator')).trim() : null,
+        time_to_contact:       get('time_to_contact') ? String(get('time_to_contact')).trim() : null,
+        last_communication_at: toIso(get('last_communication_at')),
+        referral_source:       get('referral_source') ? String(get('referral_source')).trim() : null,
+        estimated_revenue:     toMoney(get('estimated_revenue')),
+        synced_at:             now,
+        updated_at:            now,
+      } as Record<string, unknown>;
+    });
+}
+
 export function AdminLeadsSync() {
   const [logs, setLogs]       = useState<LeadSyncLog[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [status, setStatus]   = useState('');
 
   async function loadLogs() {
     try { setLogs(await listSyncLogs()); } catch { /* silent */ }
@@ -17,13 +116,37 @@ export function AdminLeadsSync() {
 
   async function runSync() {
     setSyncing(true);
+    setStatus('Connecting to Gmail…');
     try {
-      const { data, error } = await supabase.functions.invoke('sync-leads');
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      // Step 1: get download link from edge function
+      const { data: linkData, error: linkErr } = await supabase.functions.invoke('sync-leads', {
+        body: { mode: 'get-link' },
+      });
+      if (linkErr) throw linkErr;
+      if (linkData?.error) throw new Error(linkData.error);
+
+      setStatus('Downloading report…');
+      // Step 2: download the Excel file in the browser
+      const fileRes = await fetch(linkData.download_url);
+      if (!fileRes.ok) throw new Error(`Download failed (${fileRes.status})`);
+      const buffer = await fileRes.arrayBuffer();
+
+      setStatus('Parsing Excel…');
+      // Step 3: parse in the browser
+      const rows = parseExcel(buffer);
+      if (!rows.length) throw new Error('No leads found in the Excel file. Check column headers.');
+
+      setStatus(`Saving ${rows.length} leads…`);
+      // Step 4: send parsed rows to edge function for upsert
+      const { data: upsertData, error: upsertErr } = await supabase.functions.invoke('sync-leads', {
+        body: { mode: 'upsert', rows, email_subject: linkData.email_subject },
+      });
+      if (upsertErr) throw upsertErr;
+      if (upsertData?.error) throw new Error(upsertData.error);
+
       toast({
         title: 'Sync complete',
-        description: `${data.total} leads processed from "${data.email_subject}"`,
+        description: `${rows.length} leads imported from "${linkData.email_subject}"`,
         variant: 'success',
       });
       loadLogs();
@@ -32,6 +155,7 @@ export function AdminLeadsSync() {
       loadLogs();
     } finally {
       setSyncing(false);
+      setStatus('');
     }
   }
 
@@ -67,55 +191,37 @@ export function AdminLeadsSync() {
               <div className="text-sm text-muted-foreground">Never synced</div>
             )}
           </div>
-          <button
-            type="button"
-            onClick={runSync}
-            disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing…' : 'Sync Now'}
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              onClick={runSync}
+              disabled={syncing}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing…' : 'Sync Now'}
+            </button>
+            {status && <div className="text-xs text-muted-foreground">{status}</div>}
+          </div>
         </div>
       </div>
 
       {/* Setup instructions */}
       <div className="rounded-xl border bg-card p-5 space-y-5">
-        <div className="font-medium">Gmail Setup (one-time)</div>
+        <div className="font-medium">Gmail Setup (one-time) ✓ Already configured</div>
         <ol className="space-y-4 text-sm text-muted-foreground list-none">
           {[
-            {
-              n: 1,
-              title: 'Create Google Cloud credentials',
-              body: 'Go to console.cloud.google.com → APIs & Services → Credentials → Create OAuth 2.0 Client ID (Web app). Add your Supabase function URL as an authorized redirect URI.',
-            },
-            {
-              n: 2,
-              title: 'Enable Gmail API',
-              body: 'In the same project go to APIs & Services → Library → search "Gmail API" → Enable.',
-            },
-            {
-              n: 3,
-              title: 'Get a refresh token',
-              body: 'Use the Google OAuth 2.0 Playground (oauth2.googleapis.com/oauth2/v1/tokeninfo). Authorize with scope: https://www.googleapis.com/auth/gmail.readonly — copy the refresh token.',
-            },
-            {
-              n: 4,
-              title: 'Add secrets to Supabase',
-              body: 'In your Supabase dashboard → Edge Functions → Manage secrets, add: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN.',
-            },
-            {
-              n: 5,
-              title: '(Optional) Set the search query',
-              body: 'Add secret GMAIL_SEARCH_QUERY to narrow which email is picked up. Default: subject:"Lead Status". Example: from:noreply@yourcrm.com subject:"Lead Status".',
-            },
+            { n: 1, title: 'GMAIL_CLIENT_ID', body: '✓ Set' },
+            { n: 2, title: 'GMAIL_CLIENT_SECRET', body: '✓ Set' },
+            { n: 3, title: 'GMAIL_REFRESH_TOKEN', body: '✓ Set' },
+            { n: 4, title: 'GMAIL_SEARCH_QUERY (optional)', body: 'Set this in Supabase secrets if the default subject:"Lead Status" doesn\'t match your CRM email subject.' },
           ].map(step => (
             <li key={step.n} className="flex gap-3">
               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground">
                 {step.n}
               </span>
               <div>
-                <div className="font-medium text-foreground">{step.title}</div>
+                <div className="font-medium text-foreground font-mono text-xs">{step.title}</div>
                 <div className="mt-0.5">{step.body}</div>
               </div>
             </li>
