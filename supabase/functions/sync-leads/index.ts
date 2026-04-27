@@ -97,17 +97,40 @@ Deno.serve(async (req) => {
         Deno.env.get('SUPABASE_URL')!,
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       );
+
+      // Preserve manually edited referral sources — fetch what's already in the DB
+      const quoteNumbers = rows.map(r => r.quote_number as string);
+      const { data: existing } = await supabase
+        .from('leads')
+        .select('quote_number, referral_source')
+        .in('quote_number', quoteNumbers);
+
+      const existingSourceMap = new Map(
+        (existing ?? []).map((e: { quote_number: string; referral_source: string | null }) =>
+          [e.quote_number, e.referral_source]
+        )
+      );
+
+      // For existing leads: keep their referral_source. For new leads: use SmartMoving's value.
+      const mergedRows = rows.map(row => {
+        const qn = row.quote_number as string;
+        if (existingSourceMap.has(qn)) {
+          return { ...row, referral_source: existingSourceMap.get(qn) };
+        }
+        return row;
+      });
+
       const { error } = await supabase
         .from('leads')
-        .upsert(rows, { onConflict: 'quote_number', ignoreDuplicates: false });
+        .upsert(mergedRows, { onConflict: 'quote_number', ignoreDuplicates: false });
       if (error) throw error;
 
       await supabase.from('lead_sync_logs').insert({
-        total_processed: rows.length,
+        total_processed: mergedRows.length,
         email_subject: body.email_subject ?? null,
       });
 
-      return Response.json({ success: true, total: rows.length }, { headers: corsHeaders });
+      return Response.json({ success: true, total: mergedRows.length }, { headers: corsHeaders });
     }
 
     // Default: fetch-file — find Gmail email, download file server-side, return base64
