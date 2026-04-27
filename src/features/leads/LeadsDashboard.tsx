@@ -23,6 +23,12 @@ function money(n: number) {
   return `$${Math.round(n).toLocaleString('en-US')}`;
 }
 
+function normalizeSource(raw: string | null): string {
+  const s = (raw ?? 'Unknown').trim();
+  if (/^google/i.test(s)) return 'Google Search';
+  return s;
+}
+
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
@@ -73,7 +79,7 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
   const sourceRows = useMemo(() => {
     const m: Record<string, { leads: number; booked: number; rev: number }> = {};
     for (const l of leads) {
-      const s = l.referral_source ?? 'Unknown';
+      const s = normalizeSource(l.referral_source);
       if (!m[s]) m[s] = { leads: 0, booked: 0, rev: 0 };
       m[s].leads++;
       m[s].rev += l.estimated_revenue ?? 0;
@@ -130,7 +136,7 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
   const rangeBySource = useMemo(() => {
     const m: Record<string, { leads: number; booked: number }> = {};
     for (const l of rangeLeads) {
-      const s = l.referral_source ?? 'Unknown';
+      const s = normalizeSource(l.referral_source);
       if (!m[s]) m[s] = { leads: 0, booked: 0 };
       m[s].leads++;
       if (l.likelihood === 'booked') m[s].booked++;
