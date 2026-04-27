@@ -47,59 +47,54 @@ const KNOWN_SOURCES = [
   'Saw a Truck',
 ];
 
-function SourceCell({ lead, onUpdate }: { lead: Lead; onUpdate: (id: string, source: string) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue]     = useState(normalizeSource(lead.referral_source));
+function SourceCell({ lead, allSources, onUpdate }: {
+  lead: Lead;
+  allSources: string[];
+  onUpdate: (id: string, source: string) => void;
+}) {
+  const [editing, setSaving_] = useState(false);
   const [saving, setSaving]   = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const selectRef = useRef<HTMLSelectElement>(null);
+  const current   = normalizeSource(lead.referral_source);
 
   useEffect(() => {
-    if (editing) inputRef.current?.focus();
+    if (editing) selectRef.current?.focus();
   }, [editing]);
 
-  async function save() {
-    const trimmed = value.trim();
-    if (!trimmed || trimmed === normalizeSource(lead.referral_source)) {
-      setEditing(false);
-      return;
-    }
+  async function handleChange(newVal: string) {
+    if (!newVal || newVal === current) { setSaving_(false); return; }
     setSaving(true);
     try {
-      await updateLeadSource(lead.id, trimmed);
-      onUpdate(lead.id, trimmed);
-    } catch { /* silent — value reverts */ }
+      await updateLeadSource(lead.id, newVal);
+      onUpdate(lead.id, newVal);
+    } catch { /* silent */ }
     setSaving(false);
-    setEditing(false);
+    setSaving_(false);
   }
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1 min-w-[160px]">
-        <input
-          ref={inputRef}
-          list="source-options"
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          onBlur={save}
-          onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false); }}
-          className="h-7 w-full px-2 rounded-lg border border-accent/50 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/30"
-        />
-        <datalist id="source-options">
-          {KNOWN_SOURCES.map(s => <option key={s} value={s} />)}
-        </datalist>
-      </div>
+      <select
+        ref={selectRef}
+        defaultValue={current}
+        onBlur={e => handleChange(e.target.value)}
+        onChange={e => handleChange(e.target.value)}
+        className="h-7 px-1 rounded-lg border border-accent/50 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-accent/30"
+      >
+        {allSources.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
     );
   }
 
   return (
     <button
       type="button"
-      onClick={() => { setValue(normalizeSource(lead.referral_source)); setEditing(true); }}
+      onClick={() => setSaving_(true)}
       disabled={saving}
       className="text-left whitespace-nowrap hover:text-accent hover:underline underline-offset-2 transition-colors disabled:opacity-50"
       title="Click to edit"
     >
-      {saving ? '…' : normalizeSource(lead.referral_source)}
+      {saving ? '…' : current}
     </button>
   );
 }
@@ -121,6 +116,7 @@ export function LeadsList({ leads: initialLeads, onLeadsChange }: { leads: Lead[
 
   const agents  = useMemo(() => [...new Set(leads.map(l => l.sales_person).filter(Boolean))].sort() as string[], [leads]);
   const sources = useMemo(() => [...new Set(leads.map(l => normalizeSource(l.referral_source)))].sort(), [leads]);
+  const allSources = useMemo(() => [...new Set([...KNOWN_SOURCES, ...sources])].sort(), [sources]);
 
   const filtered = useMemo(() => leads.filter(l => {
     if (agent  && l.sales_person    !== agent)  return false;
@@ -193,7 +189,7 @@ export function LeadsList({ leads: initialLeads, onLeadsChange }: { leads: Lead[
               <tr key={l.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                 <td className="px-3 py-2.5 font-mono text-xs font-medium">{l.quote_number}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap">{l.sales_person ?? '—'}</td>
-                <td className="px-3 py-2.5"><SourceCell lead={l} onUpdate={handleSourceUpdate} /></td>
+                <td className="px-3 py-2.5"><SourceCell lead={l} allSources={allSources} onUpdate={handleSourceUpdate} /></td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{l.service_type ?? '—'}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{fmt(l.received_at, 'date')}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{fmt(l.service_date, 'date')}</td>
