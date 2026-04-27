@@ -1,6 +1,7 @@
 import type { LineItem, MoveType, PriceBreakdown, QuoteInput, RateTables, Tier } from './types';
 import {
   calculateCrating,
+  calculateExtraStops,
   calculateHeavyItems,
   calculatePacking,
   calculateStairs,
@@ -37,6 +38,12 @@ export function buildAddons(input: QuoteInput, rates: RateTables): AddonBundle {
   if (stairs) {
     lines.push(stairs);
     amount += stairs.amount;
+  }
+
+  const extraStops = calculateExtraStops(input.extra_stops_count, rates);
+  if (extraStops) {
+    lines.push(extraStops);
+    amount += extraStops.amount;
   }
 
   const heavy = calculateHeavyItems(input.heavy_items, rates);

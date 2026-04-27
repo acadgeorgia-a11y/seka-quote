@@ -118,35 +118,32 @@ export function AdminLeadsSync() {
     setSyncing(true);
     setStatus('Connecting to Gmail…');
     try {
-      // Step 1: get download link from edge function
-      const { data: linkData, error: linkErr } = await supabase.functions.invoke('sync-leads', {
-        body: { mode: 'get-link' },
+      // Step 1: edge function finds email, downloads file server-side, returns base64
+      const { data: fetchData, error: fetchErr } = await supabase.functions.invoke('sync-leads', {
+        body: { mode: 'fetch-file' },
       });
-      if (linkErr) throw linkErr;
-      if (linkData?.error) throw new Error(linkData.error);
-
-      setStatus('Downloading report…');
-      // Step 2: download the Excel file in the browser
-      const fileRes = await fetch(linkData.download_url);
-      if (!fileRes.ok) throw new Error(`Download failed (${fileRes.status})`);
-      const buffer = await fileRes.arrayBuffer();
+      if (fetchErr) throw fetchErr;
+      if (fetchData?.error) throw new Error(fetchData.error);
 
       setStatus('Parsing Excel…');
-      // Step 3: parse in the browser
-      const rows = parseExcel(buffer);
+      // Step 2: decode base64 → ArrayBuffer → parse in browser
+      const binary = atob(fetchData.file_base64 as string);
+      const bytes  = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const rows = parseExcel(bytes.buffer);
       if (!rows.length) throw new Error('No leads found in the Excel file. Check column headers.');
 
       setStatus(`Saving ${rows.length} leads…`);
-      // Step 4: send parsed rows to edge function for upsert
+      // Step 3: send parsed rows to edge function for upsert
       const { data: upsertData, error: upsertErr } = await supabase.functions.invoke('sync-leads', {
-        body: { mode: 'upsert', rows, email_subject: linkData.email_subject },
+        body: { mode: 'upsert', rows, email_subject: fetchData.email_subject },
       });
       if (upsertErr) throw upsertErr;
       if (upsertData?.error) throw new Error(upsertData.error);
 
       toast({
         title: 'Sync complete',
-        description: `${rows.length} leads imported from "${linkData.email_subject}"`,
+        description: `${rows.length} leads imported from "${fetchData.email_subject}"`,
         variant: 'success',
       });
       loadLogs();

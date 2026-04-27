@@ -78,6 +78,21 @@ export function calculateStairs(
   };
 }
 
+export function calculateExtraStops(
+  count: number | undefined,
+  rates: RateTables,
+): LineItem | null {
+  if (!count || count <= 0) return null;
+  const rate = rates.misc.extra_stop_rate ?? 125;
+  const amount = count * rate;
+  return {
+    label: `Extra stop${count === 1 ? '' : 's'} ×${count}`,
+    amount,
+    category: 'extra_stop',
+    detail: `${count} × $${rate}`,
+  };
+}
+
 export function calculateHeavyItems(
   items: HeavyItemSelection[] | undefined,
   rates: RateTables,

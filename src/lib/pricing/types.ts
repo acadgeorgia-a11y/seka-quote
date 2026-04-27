@@ -20,6 +20,7 @@ export type LineCategory =
   | 'boxes'
   | 'unpacking'
   | 'stairs'
+  | 'extra_stop'
   | 'heavy_item'
   | 'crating'
   | 'storage'
@@ -88,6 +89,7 @@ export interface QuoteInput {
   unpacking_qty?: number;
   unpacking_discounted?: boolean;
   stairs_flights?: number;
+  extra_stops_count?: number;
   heavy_items?: HeavyItemSelection[];
   crating?: CratingSelection;
   storage?: StorageSelection;

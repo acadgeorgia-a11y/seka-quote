@@ -66,13 +66,23 @@ function pickDownloadLink(links: string[]): string {
   throw new Error('No download link found in email body.');
 }
 
+/** Encode ArrayBuffer to base64 in Deno. */
+function bufferToBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
-  // Mode: 'get-link' returns the download URL; 'upsert' saves parsed rows
+  // Mode: 'fetch-file' downloads & returns file as base64; 'upsert' saves parsed rows
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* no body */ }
-  const mode = (body.mode as string) ?? 'get-link';
+  const mode = (body.mode as string) ?? 'fetch-file';
 
   try {
     const missing = ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN']
@@ -80,7 +90,6 @@ Deno.serve(async (req) => {
     if (missing.length) throw new Error(`Missing secrets: ${missing.join(', ')}`);
 
     if (mode === 'upsert') {
-      // Frontend parsed the Excel and sends rows here for upserting
       const rows = body.rows as Record<string, unknown>[];
       if (!rows?.length) throw new Error('No rows provided');
 
@@ -101,7 +110,7 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, total: rows.length }, { headers: corsHeaders });
     }
 
-    // Default: get-link — find Gmail email and return download URL
+    // Default: fetch-file — find Gmail email, download file server-side, return base64
     const token   = await getAccessToken();
     const message = await findLatestReportEmail(token);
     const subject = (message.payload?.headers as {name:string;value:string}[] | undefined)
@@ -109,7 +118,16 @@ Deno.serve(async (req) => {
     const links   = extractLinks(message);
     const dlLink  = pickDownloadLink(links);
 
-    return Response.json({ download_url: dlLink, email_subject: subject }, { headers: corsHeaders });
+    // Download server-side to avoid CORS issues in the browser
+    const fileRes = await fetch(dlLink);
+    if (!fileRes.ok) throw new Error(`File download failed (${fileRes.status}): ${dlLink}`);
+    const fileBuffer = await fileRes.arrayBuffer();
+    const fileBase64 = bufferToBase64(fileBuffer);
+
+    return Response.json(
+      { file_base64: fileBase64, email_subject: subject },
+      { headers: corsHeaders },
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: msg }, { status: 500, headers: corsHeaders });

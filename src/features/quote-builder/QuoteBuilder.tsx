@@ -104,6 +104,7 @@ export function QuoteBuilder() {
           unpacking_qty: draft.unpacking_qty,
           unpacking_discounted: draft.unpacking_discounted,
           stairs_flights: draft.stairs_flights,
+          extra_stops_count: draft.extra_stops.length,
           heavy_items: draft.heavy_items,
           crating: draft.crating,
           storage: draft.storage,
