@@ -61,17 +61,6 @@ function Badge({ status }: { status: 'booked' | 'pending' | 'lost' }) {
   );
 }
 
-function BarCell({ value, max, color }: { value: number; max: number; color: string }) {
-  const w = max ? Math.round((value / max) * 100) : 0;
-  return (
-    <div className="flex items-center gap-2 justify-end">
-      <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${w}%` }} />
-      </div>
-      <span className="tabular-nums w-6 text-right">{value}</span>
-    </div>
-  );
-}
 
 function PctCell({ value, max }: { value: number; max: number }) {
   const p = max ? Math.round((value / max) * 100) : 0;
@@ -141,7 +130,6 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
     return Object.entries(m).sort((a, b) => b[1].leads - a[1].leads);
   }, [leads]);
 
-  const maxSourceLeads = sourceRows[0]?.[1].leads ?? 1;
 
   const branchRows = useMemo(() => {
     const m: Record<string, { leads: number; booked: number; rev: number }> = {};
@@ -190,7 +178,6 @@ export function LeadsDashboard({ leads }: { leads: Lead[] }) {
   }, [rangeLeads]);
 
   const rangeBooked = rangeLeads.filter(l => l.likelihood === 'booked').length;
-  const maxAgentLeads = agentRows[0]?.[1].leads ?? 1;
 
   return (
     <div className="space-y-6">
