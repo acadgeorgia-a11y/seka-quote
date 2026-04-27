@@ -1,3 +1,36 @@
+export type LeadLikelihood = 'booked' | 'lost' | 'pending';
+
+export type Lead = {
+  id: string;
+  quote_number: string;
+  branch_name: string | null;
+  status_raw: string | null;
+  likelihood: LeadLikelihood;
+  service_type: string | null;
+  volume_weight: string | null;
+  received_at: string | null;
+  service_date: string | null;
+  quote_sent_at: string | null;
+  sales_person: string | null;
+  estimator: string | null;
+  move_coordinator: string | null;
+  time_to_contact: string | null;
+  last_communication_at: string | null;
+  referral_source: string | null;
+  estimated_revenue: number | null;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LeadSyncLog = {
+  id: string;
+  synced_at: string;
+  total_processed: number;
+  email_subject: string | null;
+  error: string | null;
+};
+
 export type TaskStatus = 'not_started' | 'planning' | 'in_progress' | 'review' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskAssignee = 'Alex' | 'Terry' | 'Chris' | 'Rob';

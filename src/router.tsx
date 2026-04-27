@@ -7,6 +7,7 @@ import { AdminPage } from './pages/AdminPage';
 import { CsPage } from './pages/CsPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { ContractsPage } from './pages/ContractsPage';
+import { LeadsPage } from './pages/LeadsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminRatesLocal } from './features/admin/AdminRatesLocal';
 import { AdminRatesLongDistance } from './features/admin/AdminRatesLongDistance';
@@ -14,6 +15,7 @@ import { AdminRatesAddons } from './features/admin/AdminRatesAddons';
 import { AdminSettings } from './features/admin/AdminSettings';
 import { AdminAgents } from './features/admin/AdminAgents';
 import { AdminTolls } from './features/admin/AdminTolls';
+import { AdminLeadsSync } from './features/admin/AdminLeadsSync';
 import { ClientSignPage } from './features/contracts/ClientSignPage';
 
 export const router = createBrowserRouter([
@@ -30,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'new-quote', element: <NewQuotePage /> },
       { path: 'quotes', element: <QuotesPage /> },
       { path: 'quotes/:quoteCode', element: <QuoteDetailPage /> },
+      { path: 'leads', element: <LeadsPage /> },
       { path: 'cs', element: <CsPage /> },
       { path: 'invoices', element: <InvoicesPage /> },
       { path: 'contracts', element: <ContractsPage /> },
@@ -44,6 +47,7 @@ export const router = createBrowserRouter([
           { path: 'settings', element: <AdminSettings /> },
           { path: 'agents', element: <AdminAgents /> },
           { path: 'tolls', element: <AdminTolls /> },
+          { path: 'leads-sync', element: <AdminLeadsSync /> },
         ],
       },
     ],

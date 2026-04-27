@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { PlusCircle, FileText, ClipboardList, Receipt, FilePen, Settings2, ChevronUp } from 'lucide-react';
+import { PlusCircle, FileText, ClipboardList, Receipt, FilePen, Settings2, ChevronUp, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAgent } from '@/stores/useAgent';
 
 const SALES_LINKS = [
   { to: '/new-quote', label: 'New Quote', icon: PlusCircle },
   { to: '/quotes',    label: 'Quotes',    icon: FileText },
+  { to: '/leads',     label: 'Leads',     icon: TrendingUp },
 ];
 
 const CS_LINKS = [

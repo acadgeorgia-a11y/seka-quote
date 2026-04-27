@@ -10,6 +10,7 @@ const sections = [
   { to: '/admin/tolls', label: 'Tolls' },
   { to: '/admin/settings', label: 'Settings' },
   { to: '/admin/agents', label: 'Agents' },
+  { to: '/admin/leads-sync', label: 'Lead Sync' },
 ];
 
 export function AdminShell() {

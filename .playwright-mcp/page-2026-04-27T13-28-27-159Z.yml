@@ -1,0 +1,73 @@
+- application [ref=e1]:
+  - iframe [ref=e2]:
+    
+  - iframe [ref=e3]:
+    
+  - banner "მენიუს ზოლი" [ref=e4]:
+    - generic [ref=e7]:
+      - link "Sheets მთავარი გვერდი" [ref=e9] [cursor=pointer]:
+        - /url: https://docs.google.com/spreadsheets/?usp=sheets_web
+      - generic [ref=e16]:
+        - generic "Lead Tracker 2.0 NEW" [ref=e18]:
+          - generic [ref=e20]: Lead Tracker 2.0 NEW
+          - button "Microsoft Excel ფორმატი" [ref=e22] [cursor=pointer]:
+            - generic [ref=e23]: .xlsx
+          - 'button "დოკუმენტის სტატუსი: შენახულია Drive-ში." [ref=e27]'
+        - generic [ref=e35]:
+          - generic [ref=e38]:
+            - button "Alex Chanturia" [ref=e41]:
+              - img "Alex Chanturia" [ref=e46] [cursor=pointer]
+            - button "2 დამალულია 3 მნახველი ჯამში" [ref=e206] [cursor=pointer]:
+              - generic [ref=e50]: "+2"
+          - button "ყველა კომენტარის ჩვენება" [ref=e54] [cursor=pointer]
+          - generic [ref=e57]:
+            - button "გაზიარება. ყველა, ვისაც აქვს ბმული. ყველას, ვისაც აქვს ბმული, შეუძლია წვდომა. შესვლა სავალდებულო არ არის." [disabled] [ref=e58]: გაზიარება
+            - button "სწრაფი გაზიარების მოქმედებები" [disabled] [ref=e60]
+          - link "შესვლა" [ref=e64] [cursor=pointer]:
+            - /url: https://accounts.google.com/ServiceLogin?service=wise&passive=1209600&osid=1&continue=https://docs.google.com/spreadsheets/d/1R9rv2k5J_fOWM9j1lz9SGv-dSGvY0dz1/edit?usp%3Dsharing%26ouid%3D102589232799215486620%26rtpof%3Dtrue%26sd%3Dtrue&followup=https://docs.google.com/spreadsheets/d/1R9rv2k5J_fOWM9j1lz9SGv-dSGvY0dz1/edit?usp%3Dsharing%26ouid%3D102589232799215486620%26rtpof%3Dtrue%26sd%3Dtrue&ltmpl=sheets&ec=GAZAmwI
+    - generic [ref=e65]:
+      - menubar [ref=e67]:
+        - menuitem "ფაილი" [ref=e68] [cursor=pointer]
+        - menuitem "რედაქტირება" [ref=e69] [cursor=pointer]
+        - menuitem "ნახვა" [ref=e70] [cursor=pointer]
+        - menuitem "ჩასმა" [disabled] [ref=e71]
+        - menuitem "ფორმატი" [disabled] [ref=e72]
+        - menuitem "მონაცემები" [ref=e73] [cursor=pointer]
+        - menuitem "ინსტრუმენტები" [ref=e74] [cursor=pointer]
+        - menuitem "დახმარება" [ref=e75] [cursor=pointer]
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - toolbar "მენიუების ძიება (პარამეტრი+/)" [ref=e78]:
+            - combobox "მენიუები" [ref=e80]
+          - toolbar "ძირითადი" [ref=e81]:
+            - button "ბეჭდვა (⌘P)" [ref=e82] [cursor=pointer]
+            - button "ფილტრის ხედები" [ref=e87] [cursor=pointer]
+            - combobox "მასშტაბირება" [ref=e96] [cursor=pointer]:
+              - option "მასშტაბირება სია. არჩეულია 100%." [selected] [ref=e99]:
+                - textbox "მასშტაბი" [ref=e100]: 100%
+            - button "რეჟიმი" [ref=e104] [cursor=pointer]:
+              - generic [ref=e105]: მხოლოდ ნახვა
+        - toolbar "რეჟიმი და ხედი" [ref=e108]:
+          - button "მენიუების დამალვა (Ctrl+Shift+F)" [ref=e109] [cursor=pointer]
+    - generic [ref=e116]:
+      - generic "სახელის ველი (⌘ + J)" [ref=e117]:
+        - textbox [ref=e118]: A1:G1
+        - button "სახელის ველის მენიუს ღილაკი. აირჩიეთ მენიუს ერთ-ერთი ერთეული მის შესაბამის სახელდებულ დიაპაზონზე გადასასვლელად" [ref=e120] [cursor=pointer]
+      - textbox [ref=e136]
+  - navigation "ფურცლის ჩანართების ზოლი" [ref=e172]:
+    - toolbar [ref=e173]:
+      - button "ყველა ფურცელი" [ref=e174] [cursor=pointer]
+    - toolbar [ref=e181]:
+      - button "Lead Tracker" [ref=e182] [cursor=pointer]:
+        - generic [ref=e186]: Lead Tracker
+      - button "Dashboard" [ref=e190]:
+        - generic [ref=e194]: Dashboard
+    - toolbar [ref=e198]
+  - generic [ref=e199]:
+    - textbox [active]
+  - link "ეკრანის წამკითხველის მხარდაჭერის ჩართვა" [ref=e200] [cursor=pointer]:
+    - /url: "#"
+  - textbox [ref=e201]
+  - region [ref=e202]: ეკრანის წამკითხველის მხარდაჭერის ჩასართავად დააჭირეთ ⌘+პარამეტრი+Z-ს კლავიატურების მალსახმობების შესახებ ინფორმაციისათვის დააჭირეთ ⌘slash-ს
+  - region
+  - generic [ref=e203]: mason s შეუერთდა დოკუმენტს.

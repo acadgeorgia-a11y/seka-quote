@@ -11,6 +11,7 @@ const sections = [
     links: [
       { to: '/new-quote', label: 'New Quote' },
       { to: '/quotes', label: 'Quotes' },
+      { to: '/leads', label: 'Leads' },
     ],
   },
   {
